@@ -1,0 +1,89 @@
+<!-- 
+    ============================================================================
+    STATUS.HTML - DreamWalker Plane
+    ============================================================================
+    Página de status do site (contadores de visitas e downloads)
+    Mantido o conteúdo original adaptado para Tailwind
+    ============================================================================
+-->
+
+{% extends "base.html" %}
+
+{% block title %}Status - DreamWalker Plane{% endblock %}
+
+{% block content %}
+<div class="bg-mystic min-h-screen py-12">
+    
+    <div class="container mx-auto px-4 max-w-4xl">
+        
+        <!-- Logo -->
+        <div class="flex justify-center mt-8">
+            <img src="{{ url_for('static', filename='images/amiraldo_logo_transparent_white.png') }}" 
+                 alt="DreamWalker Logo" 
+                 class="w-40 md:w-48 h-auto rounded-full shadow-dream">
+        </div>
+        
+        <!-- Status -->
+        <div class="dream-card p-8 mt-8 text-center" data-anime="down">
+            <h1 class="text-2xl md:text-3xl font-orbitron text-white glow-text mb-6">Status do Portal</h1>
+            
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
+                <div class="bg-dream-purple/20 rounded-lg p-4">
+                    <i class="bi bi-people-fill text-3xl text-dream-purple"></i>
+                    <p class="text-gray-400 mt-2">Visitantes</p>
+                    <p class="text-3xl font-orbitron text-white">{{ visitantes }}</p>
+                </div>
+                <div class="bg-dream-purple/20 rounded-lg p-4">
+                    <i class="bi bi-download text-3xl text-dream-purple"></i>
+                    <p class="text-gray-400 mt-2">Downloads</p>
+                    <p class="text-3xl font-orbitron text-white">{{ downloads }}</p>
+                </div>
+            </div>
+            
+            <h2 class="text-xl font-orbitron text-white mb-4">Histórico de Visitas</h2>
+            
+            <div class="max-h-96 overflow-y-auto">
+                <table class="w-full text-sm">
+                    <thead class="bg-dream-purple/30 sticky top-0">
+                        <tr>
+                            <th class="px-4 py-2 text-left">Data</th>
+                            <th class="px-4 py-2 text-left">Localização</th>
+                            <th class="px-4 py-2 text-left">IP</th>
+                            <th class="px-4 py-2 text-left">OS</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for visita in visitas %}
+                        <tr class="border-b border-dream-purple/30">
+                            <td class="px-4 py-2 text-gray-400">{{ visita.data }}</td>
+                            <td class="px-4 py-2 text-gray-400">{{ visita.local }}</td>
+                            <td class="px-4 py-2 text-gray-400">{{ visita.ip if visita.ip else '--' }}</td>
+                            <td class="px-4 py-2 text-gray-400">{{ visita.os if visita.os else '--' }}</td>
+                        </tr>
+                        {% else %}
+                        <tr>
+                            <td colspan="4" class="px-4 py-8 text-center text-gray-500">
+                                Nenhuma visita registrada ainda.
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+        
+        <!-- Cubo místico -->
+        <div class="flex justify-center mt-12">
+            <div id='cube-container' class="w-12 h-12 md:w-16 md:h-16">
+                <div class="face top"></div>
+                <div class="face right"></div>
+                <div class="face bottom"></div>
+                <div class="face left"></div>
+                <div class="face back"></div>
+                <div class="face front"></div>
+            </div>
+        </div>
+        
+    </div>
+</div>
+{% endblock %}

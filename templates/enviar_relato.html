@@ -1,0 +1,140 @@
+<!-- 
+    ============================================================================
+    ENVIAR_RELATO.HTML - DreamWalker Plane
+    ============================================================================
+    Formulário para usuários enviarem seus relatos
+    O relato fica com status "pendente" até aprovação do admin
+    ============================================================================
+-->
+
+{% extends "base.html" %}
+
+{% block title %}Enviar Relato - DreamWalker Plane{% endblock %}
+
+{% block content %}
+<div class="bg-mystic min-h-screen py-12">
+    
+    <div class="container mx-auto px-4 max-w-3xl">
+        
+        <!-- Logo -->
+        <div class="flex justify-center mb-8">
+            <img src="{{ url_for('static', filename='images/amiraldo_logo_transparent_white.png') }}" 
+                 alt="DreamWalker Logo" 
+                 class="w-32 h-auto rounded-full shadow-dream">
+        </div>
+        
+        <!-- Cabeçalho -->
+        <div class="text-center mb-8" data-anime="down">
+            <h1 class="text-3xl md:text-4xl font-orbitron text-white glow-text">Compartilhe seu Relato</h1>
+            <p class="text-gray-400 mt-4">
+                Suas experiências oníricas podem inspirar outros sonhadores. 
+                Compartilhe sua jornada e faça parte do mural do DreamWalker Plane.
+            </p>
+            <p class="text-dream-purple text-sm mt-2">
+                <i class="bi bi-info-circle"></i> Relatos passam por moderação antes de aparecerem no mural
+            </p>
+        </div>
+        
+        <!-- Formulário -->
+        <div class="dream-card p-6 md:p-8" data-anime="up">
+            <form method="POST" action="{{ url_for('relatos.enviar_relato') }}" data-loading="true">
+                
+                <!-- Campo: Autor -->
+                <div class="mb-6">
+                    <label for="autor" class="block text-white font-orbitron mb-2">
+                        <i class="bi bi-person mr-2"></i> Seu nome
+                    </label>
+                    <input type="text" 
+                           id="autor" 
+                           name="autor" 
+                           required
+                           value="{{ autor or '' }}"
+                           class="w-full bg-dream-gray border border-dream-purple/50 rounded-lg px-4 py-3 text-white focus:outline-none focus:border-dream-purple focus:ring-1 focus:ring-dream-purple transition"
+                           placeholder="Como você gostaria de ser chamado?">
+                </div>
+                
+                <!-- Campo: Título -->
+                <div class="mb-6">
+                    <label for="titulo" class="block text-white font-orbitron mb-2">
+                        <i class="bi bi-journal-bookmark-fill mr-2"></i> Título do relato
+                    </label>
+                    <input type="text" 
+                           id="titulo" 
+                           name="titulo" 
+                           required
+                           value="{{ titulo or '' }}"
+                           class="w-full bg-dream-gray border border-dream-purple/50 rounded-lg px-4 py-3 text-white focus:outline-none focus:border-dream-purple focus:ring-1 focus:ring-dream-purple transition"
+                           placeholder="Dê um título para sua experiência...">
+                </div>
+                
+                <!-- Campo: Conteúdo -->
+                <div class="mb-6">
+                    <label for="conteudo" class="block text-white font-orbitron mb-2">
+                        <i class="bi bi-chat-text mr-2"></i> Seu relato
+                    </label>
+                    <textarea id="conteudo" 
+                              name="conteudo" 
+                              required
+                              rows="8"
+                              class="w-full bg-dream-gray border border-dream-purple/50 rounded-lg px-4 py-3 text-white focus:outline-none focus:border-dream-purple focus:ring-1 focus:ring-dream-purple transition resize-y"
+                              placeholder="Compartilhe sua experiência onírica...&#10;&#10;O que você viu? O que sentiu? Que mundos visitou?">{% if conteudo %}{{ conteudo }}{% endif %}</textarea>
+                    <p class="text-gray-500 text-xs mt-2">
+                        <i class="bi bi-info-circle"></i> Máximo de 5000 caracteres. Seja respeitoso com outros sonhadores.
+                    </p>
+                </div>
+                
+                <!-- Botões -->
+                <div class="flex flex-col sm:flex-row gap-4 mt-8">
+                    <button type="submit" 
+                            id="btn-send"
+                            class="flex-1 bg-dream-purple hover:bg-dream-purple-light text-white font-orbitron py-3 rounded-lg transition-all duration-300">
+                        <i class="bi bi-send mr-2"></i> Enviar Relato
+                    </button>
+                    <button type="button" 
+                            id="btn-send-loader"
+                            class="flex-1 bg-dream-purple text-white font-orbitron py-3 rounded-lg hidden"
+                            disabled>
+                        <span class="spinner-border spinner-border-sm mr-2" role="status"></span>
+                        Enviando...
+                    </button>
+                    <a href="{{ url_for('relatos.mural') }}" 
+                       class="flex-1 text-center bg-transparent border border-dream-purple text-dream-purple hover:bg-dream-purple/10 font-orbitron py-3 rounded-lg transition-all duration-300">
+                        <i class="bi bi-arrow-left mr-2"></i> Voltar ao Mural
+                    </a>
+                </div>
+                
+            </form>
+        </div>
+        
+        <!-- Dicas -->
+        <div class="mt-8 text-center text-gray-500 text-sm">
+            <p>✨ Relatos autênticos e bem escritos têm mais chances de serem aprovados ✨</p>
+        </div>
+        
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    // Contador de caracteres (opcional)
+    const textarea = document.getElementById('conteudo');
+    const contador = document.createElement('div');
+    contador.className = 'text-gray-500 text-xs mt-1 text-right';
+    contador.id = 'char-counter';
+    textarea.parentNode.appendChild(contador);
+    
+    function updateCharCount() {
+        const length = textarea.value.length;
+        contador.innerHTML = `${length} / 5000 caracteres`;
+        if (length > 5000) {
+            contador.style.color = '#ef4444';
+        } else {
+            contador.style.color = '#9ca3af';
+        }
+    }
+    
+    textarea.addEventListener('input', updateCharCount);
+    updateCharCount();
+</script>
+{% endblock %}

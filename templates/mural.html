@@ -1,0 +1,101 @@
+<!-- 
+    ============================================================================
+    MURAL.HTML - DreamWalker Plane
+    ============================================================================
+    Exibe todos os relatos aprovados, ordenados do mais recente para o mais antigo
+    ============================================================================
+-->
+
+{% extends "base.html" %}
+
+{% block title %}Mural de Relatos - DreamWalker Plane{% endblock %}
+
+{% block content %}
+<div class="bg-mystic min-h-screen py-12">
+    
+    <div class="container mx-auto px-4 max-w-4xl">
+        
+        <!-- Logo e cabeçalho -->
+        <div class="text-center mb-8">
+            <img src="{{ url_for('static', filename='images/amiraldo_logo_transparent_white.png') }}" 
+                 alt="DreamWalker Logo" 
+                 class="w-24 h-auto rounded-full shadow-dream mx-auto mb-6">
+            
+            <h1 class="text-3xl md:text-4xl font-orbitron text-white glow-text">Mural dos Sonhadores</h1>
+            <p class="text-gray-400 mt-4 max-w-2xl mx-auto">
+                Relatos enviados por viajantes oníricos como você. Cada história é um fragmento 
+                de um sonho, uma janela para mundos desconhecidos.
+            </p>
+        </div>
+        
+        <!-- Botão para enviar novo relato -->
+        <div class="flex justify-center mb-8">
+            <a href="{{ url_for('relatos.enviar_relato') }}" 
+               class="bg-dream-purple hover:bg-dream-purple-light text-white px-6 py-3 rounded-lg font-orbitron transition-all duration-300 shadow-dream">
+                <i class="bi bi-pencil-square mr-2"></i> Compartilhar meu relato
+            </a>
+        </div>
+        
+        <!-- Lista de relatos -->
+        {% if relatos %}
+            <div class="space-y-6">
+                {% for relato in relatos %}
+                <div class="dream-card p-6" data-anime="up">
+                    <!-- Cabeçalho do relato -->
+                    <div class="flex justify-between items-start mb-4">
+                        <div>
+                            <div class="flex items-center gap-2 mb-1">
+                                <i class="bi bi-person-circle text-dream-purple"></i>
+                                <span class="text-dream-purple font-orbitron text-sm">{{ relato.autor }}</span>
+                            </div>
+                            <h3 class="text-xl font-orbitron text-white">{{ relato.titulo }}</h3>
+                        </div>
+                        <span class="text-gray-500 text-xs">
+                            <i class="bi bi-calendar3"></i> {{ relato.data_envio }}
+                        </span>
+                    </div>
+                    
+                    <!-- Conteúdo do relato -->
+                    <div class="text-gray-300 leading-relaxed border-l-2 border-dream-purple/50 pl-4 mt-2">
+                        {{ relato.conteudo|safe }}
+                    </div>
+                    
+                    <!-- Rodapé do relato -->
+                    <div class="mt-4 pt-3 border-t border-dream-purple/30 flex justify-end">
+                        <span class="text-gray-600 text-xs flex items-center gap-1">
+                            <i class="bi bi-chat"></i> Relato compartilhado
+                        </span>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+        {% else %}
+            <!-- Mensagem quando não há relatos -->
+            <div class="dream-card p-12 text-center" data-anime="fade">
+                <i class="bi bi-chat-dots text-6xl text-dream-purple mb-4"></i>
+                <h3 class="text-xl font-orbitron text-white mb-2">Nenhum relato ainda</h3>
+                <p class="text-gray-400 mb-6">
+                    Seja o primeiro a compartilhar sua experiência onírica!
+                </p>
+                <a href="{{ url_for('relatos.enviar_relato') }}" 
+                   class="inline-block bg-dream-purple hover:bg-dream-purple-light text-white px-6 py-2 rounded-lg transition">
+                    Compartilhar relato
+                </a>
+            </div>
+        {% endif %}
+        
+        <!-- Cubo místico -->
+        <div class="flex justify-center mt-12">
+            <div id='cube-container' class="w-12 h-12 md:w-16 md:h-16">
+                <div class="face top"></div>
+                <div class="face right"></div>
+                <div class="face bottom"></div>
+                <div class="face left"></div>
+                <div class="face back"></div>
+                <div class="face front"></div>
+            </div>
+        </div>
+        
+    </div>
+</div>
+{% endblock %}

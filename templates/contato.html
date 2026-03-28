@@ -1,0 +1,207 @@
+<!-- 
+    ============================================================================
+    CONTATO.HTML - DreamWalker Plane
+    ============================================================================
+    Página de contato com formulário e reCAPTCHA
+    Envia email usando as funções existentes em control/email_function.py
+    ============================================================================
+-->
+
+{% extends "base.html" %}
+
+{% block title %}Contato - DreamWalker Plane{% endblock %}
+
+{% block extra_css %}
+<style>
+    /* Estilos específicos para o formulário de contato */
+    .form-input:focus {
+        box-shadow: 0 0 15px rgba(6, 3, 180, 0.5);
+        border-color: #0603b4;
+    }
+    
+    .grecaptcha-badge {
+        visibility: hidden !important;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="bg-mystic min-h-screen py-12">
+    
+    <div class="container mx-auto px-4 max-w-4xl">
+        
+        <!-- Logo e cabeçalho -->
+        <div class="text-center mb-8">
+            <img src="{{ url_for('static', filename='images/amiraldo_logo_transparent_white.png') }}" 
+                 alt="DreamWalker Logo" 
+                 class="w-28 h-auto rounded-full shadow-dream mx-auto mb-6">
+            
+            <h1 class="text-3xl md:text-4xl font-orbitron text-white glow-text">Mapa Onírico</h1>
+            <p class="text-gray-400 mt-4 max-w-2xl mx-auto">
+                O Mapa Onírico é a bússola que guia sua jornada até os mistérios do DreamWalker. 
+                Cada marcador é uma chave, direcionando-o para onde os fios do sonho e da realidade se encontram.
+            </p>
+        </div>
+        
+        <!-- Redes Sociais -->
+        <div class="text-center mb-12" data-anime="down">
+            <h2 class="text-2xl font-orbitron text-white mb-4">Conecte-se</h2>
+            <div class="flex justify-center gap-8">
+                <a href="https://www.instagram.com/dreamwalker_plane/" 
+                   target="_blank" 
+                   class="text-dream-purple hover:text-dream-purple-light text-4xl transition-all duration-300 hover:scale-110">
+                    <i class="bi bi-instagram"></i>
+                </a>
+                <a href="https://www.facebook.com/profile.php?id=61570894916265" 
+                   target="_blank" 
+                   class="text-dream-purple hover:text-dream-purple-light text-4xl transition-all duration-300 hover:scale-110">
+                    <i class="bi bi-facebook"></i>
+                </a>
+            </div>
+        </div>
+        
+        <!-- Quem Somos -->
+        <div class="dream-card p-6 md:p-8 mb-12" data-anime="right">
+            <h2 class="text-2xl font-orbitron text-white text-center mb-4">DreamWalker Plane</h2>
+            <p class="text-gray-300 leading-relaxed text-center">
+                O Dreamwalker Plane é um projeto experimental que mergulha nas fronteiras entre os sonhos humanos 
+                e as capacidades da inteligência artificial. Utilizando IA para gerar e manipular cenários e narrativas, 
+                o projeto explora a fusão de realidades: a fluidez dos sonhos humanos com a precisão dos algoritmos.
+            </p>
+        </div>
+        
+        <!-- Formulário de Contato -->
+        <div class="dream-card p-6 md:p-8" data-anime="up">
+            <h2 class="text-2xl font-orbitron text-white text-center mb-6">
+                <i class="bi bi-envelope-paper mr-2"></i> Envie uma Mensagem
+            </h2>
+            <p class="text-gray-400 text-center mb-6">
+                Enviar uma mensagem ao DreamWalker é lançar suas palavras no desconhecido, 
+                onde críticas, relatos e opiniões ecoam além do real.
+            </p>
+            
+            <form method="POST" action="{{ url_for('contato.contato') }}" data-loading="true">
+                
+                <!-- Nome e Email (lado a lado) -->
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
+                    <div>
+                        <label for="nome" class="block text-white font-orbitron mb-2">
+                            <i class="bi bi-person mr-2"></i> Seu nome
+                        </label>
+                        <input type="text" 
+                               id="nome" 
+                               name="nome" 
+                               required
+                               value="{{ nome or '' }}"
+                               class="form-input w-full bg-dream-gray border border-dream-purple/50 rounded-lg px-4 py-3 text-white focus:outline-none focus:border-dream-purple transition"
+                               placeholder="Como você se chama?">
+                    </div>
+                    
+                    <div>
+                        <label for="email" class="block text-white font-orbitron mb-2">
+                            <i class="bi bi-envelope mr-2"></i> Seu email
+                        </label>
+                        <input type="email" 
+                               id="email" 
+                               name="email" 
+                               required
+                               value="{{ email or '' }}"
+                               class="form-input w-full bg-dream-gray border border-dream-purple/50 rounded-lg px-4 py-3 text-white focus:outline-none focus:border-dream-purple transition"
+                               placeholder="seu@email.com">
+                    </div>
+                </div>
+                
+                <!-- Mensagem -->
+                <div class="mb-6">
+                    <label for="mensagem" class="block text-white font-orbitron mb-2">
+                        <i class="bi bi-chat-text mr-2"></i> Sua mensagem
+                    </label>
+                    <textarea id="mensagem" 
+                              name="mensagem" 
+                              required
+                              rows="6"
+                              class="form-input w-full bg-dream-gray border border-dream-purple/50 rounded-lg px-4 py-3 text-white focus:outline-none focus:border-dream-purple transition resize-y"
+                              placeholder="Escreva sua mensagem aqui...">{% if mensagem %}{{ mensagem }}{% endif %}</textarea>
+                </div>
+                
+                <!-- reCAPTCHA -->
+                <div class="flex justify-center mb-6">
+                    <div class="g-recaptcha" data-sitekey="{{ config.RECAPTCHA_SITE_KEY }}"></div>
+                </div>
+                
+                <!-- Botões -->
+                <div class="flex flex-col sm:flex-row gap-4">
+                    <button type="submit" 
+                            id="btn-send"
+                            class="flex-1 bg-dream-purple hover:bg-dream-purple-light text-white font-orbitron py-3 rounded-lg transition-all duration-300">
+                        <i class="bi bi-send mr-2"></i> Enviar Mensagem
+                    </button>
+                    <button type="button" 
+                            id="btn-send-loader"
+                            class="flex-1 bg-dream-purple text-white font-orbitron py-3 rounded-lg hidden"
+                            disabled>
+                        <span class="spinner-border spinner-border-sm mr-2" role="status"></span>
+                        Enviando...
+                    </button>
+                </div>
+                
+            </form>
+        </div>
+        
+        <!-- Seção de Participação (Doações) -->
+        <div class="dream-card p-6 md:p-8 mt-8 text-center" data-anime="left">
+            <h2 class="text-2xl font-orbitron text-white mb-4">Participe</h2>
+            <p class="text-gray-400 mb-6">
+                Nas sombras do desconhecido, onde os sonhos se entrelaçam com a realidade, 
+                existe um portal que só pode ser mantido por aqueles que compreendem o valor do inexplicável. 
+                Se você sentiu o chamado, saiba que sua contribuição mantém essa jornada viva.
+            </p>
+            <a href="{{ url_for('doacoes.doacoes') }}" 
+               class="inline-block bg-dream-purple hover:bg-dream-purple-light text-white px-8 py-3 rounded-lg font-orbitron transition-all duration-300">
+                <i class="bi bi-heart mr-2"></i> Apoiar o Projeto
+            </a>
+        </div>
+        
+        <!-- Cubo místico -->
+        <div class="flex justify-center mt-12">
+            <div id='cube-container' class="w-12 h-12 md:w-16 md:h-16">
+                <div class="face top"></div>
+                <div class="face right"></div>
+                <div class="face bottom"></div>
+                <div class="face left"></div>
+                <div class="face back"></div>
+                <div class="face front"></div>
+            </div>
+        </div>
+        
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<!-- reCAPTCHA API -->
+<script src="https://www.google.com/recaptcha/api.js" async defer></script>
+
+<script>
+    // Contador de caracteres para a mensagem
+    const textarea = document.getElementById('mensagem');
+    if (textarea) {
+        const counterDiv = document.createElement('div');
+        counterDiv.className = 'text-gray-500 text-xs mt-1 text-right';
+        textarea.parentNode.appendChild(counterDiv);
+        
+        function updateCounter() {
+            const length = textarea.value.length;
+            counterDiv.innerHTML = `${length} / 5000 caracteres`;
+            if (length > 5000) {
+                counterDiv.style.color = '#ef4444';
+            } else {
+                counterDiv.style.color = '#9ca3af';
+            }
+        }
+        
+        textarea.addEventListener('input', updateCounter);
+        updateCounter();
+    }
+</script>
+{% endblock %}

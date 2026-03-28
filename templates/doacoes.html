@@ -1,0 +1,119 @@
+<!-- 
+    ============================================================================
+    DOACOES.HTML - DreamWalker Plane
+    ============================================================================
+    Página de doações e links para compra dos contos na Hotmart
+    ============================================================================
+-->
+
+{% extends "base.html" %}
+
+{% block title %}Apoiar - DreamWalker Plane{% endblock %}
+
+{% block content %}
+<div class="bg-mystic min-h-screen py-12">
+    
+    <div class="container mx-auto px-4 max-w-5xl">
+        
+        <!-- Cabeçalho -->
+        <div class="text-center mb-12">
+            <img src="{{ url_for('static', filename='images/amiraldo_logo_transparent_white.png') }}" 
+                 alt="DreamWalker Logo" 
+                 class="w-28 h-auto rounded-full shadow-dream mx-auto mb-6">
+            
+            <h1 class="text-3xl md:text-5xl font-orbitron text-white glow-text mb-4">Apoie o Sonho</h1>
+            <p class="text-gray-400 text-lg max-w-2xl mx-auto">
+                Cada contribuição é um eco de apoio, uma faísca que ilumina os recantos 
+                mais sombrios da criação. O destino deste projeto pode estar nas suas mãos.
+            </p>
+        </div>
+        
+        <!-- Seção de Doações (PayPal) -->
+        <div class="dream-card p-8 mb-12 text-center" data-anime="down">
+            <div class="inline-block p-4 rounded-full bg-dream-purple/20 mb-4">
+                <i class="bi bi-heart-fill text-4xl text-dream-purple"></i>
+            </div>
+            <h2 class="text-2xl md:text-3xl font-orbitron text-white mb-3">Contribuição Voluntária</h2>
+            <p class="text-gray-400 mb-6 max-w-xl mx-auto">
+                Os contos são gratuitos, mas se você deseja apoiar o projeto e ajudar 
+                a manter o portal vivo, qualquer contribuição é bem-vinda.
+            </p>
+            <a href="{{ paypal_link }}" 
+               target="_blank"
+               class="inline-flex items-center gap-3 bg-[#0070ba] hover:bg-[#003087] text-white px-8 py-4 rounded-lg font-orbitron text-lg transition-all duration-300 shadow-lg hover:scale-105">
+                <i class="bi bi-paypal text-2xl"></i>
+                Doar via PayPal
+            </a>
+            <p class="text-gray-500 text-sm mt-4">
+                <i class="bi bi-lock-fill"></i> Pagamento seguro via PayPal
+            </p>
+        </div>
+        
+        <!-- Seção de Contos para Compra -->
+        <h2 class="text-2xl md:text-3xl font-orbitron text-white text-center mb-8 glow-text">
+            <i class="bi bi-cart3 mr-2"></i> Adquira os Contos
+        </h2>
+        <p class="text-gray-400 text-center mb-8 max-w-2xl mx-auto">
+            Leia gratuitamente no site ou adquira sua cópia digital na Hotmart 
+            para ter acesso offline e apoiar o autor.
+        </p>
+        
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-12">
+            {% for conto in contos %}
+            <div class="dream-card p-6 text-center hover:scale-105 transition-all duration-300" data-anime="up">
+                <div class="w-16 h-16 mx-auto mb-4 rounded-full bg-dream-purple/20 flex items-center justify-center">
+                    <i class="bi bi-book text-3xl text-dream-purple"></i>
+                </div>
+                <h3 class="text-xl font-orbitron text-white mb-2">{{ conto.titulo }}</h3>
+                <p class="text-gray-400 text-sm mb-4">{{ conto.descricao }}</p>
+                <p class="text-dream-purple text-2xl font-orbitron mb-4">{{ conto.preco }}</p>
+                <a href="{{ conto.hotmart_link }}" 
+                   target="_blank"
+                   class="block w-full bg-dream-purple hover:bg-dream-purple-light text-white py-2 rounded-lg transition-all duration-300">
+                    <i class="bi bi-cart3 mr-2"></i> Comprar na Hotmart
+                </a>
+            </div>
+            {% endfor %}
+        </div>
+        
+        <!-- Informações adicionais -->
+        <div class="dream-card p-6 text-center" data-anime="fade">
+            <div class="flex flex-wrap justify-center gap-6 text-sm text-gray-400">
+                <div class="flex items-center gap-2">
+                    <i class="bi bi-check-circle-fill text-dream-purple"></i>
+                    <span>Pagamento Seguro</span>
+                </div>
+                <div class="flex items-center gap-2">
+                    <i class="bi bi-file-pdf-fill text-dream-purple"></i>
+                    <span>Formato PDF</span>
+                </div>
+                <div class="flex items-center gap-2">
+                    <i class="bi bi-moon-stars text-dream-purple"></i>
+                    <span>Acesso Imediato</span>
+                </div>
+                <div class="flex items-center gap-2">
+                    <i class="bi bi-shield-check text-dream-purple"></i>
+                    <span>Plataforma Hotmart</span>
+                </div>
+            </div>
+            <p class="text-gray-500 text-xs mt-6">
+                Os contos também estão disponíveis gratuitamente para leitura online. 
+                A compra é opcional e ajuda a manter o projeto.
+            </p>
+        </div>
+        
+        <!-- Cubo místico -->
+        <div class="flex justify-center mt-12">
+            <div id='cube-container' class="w-12 h-12 md:w-16 md:h-16">
+                <div class="face top"></div>
+                <div class="face right"></div>
+                <div class="face bottom"></div>
+                <div class="face left"></div>
+                <div class="face back"></div>
+                <div class="face front"></div>
+            </div>
+        </div>
+        
+    </div>
+</div>
+{% endblock %}

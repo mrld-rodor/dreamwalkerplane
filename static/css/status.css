@@ -1,0 +1,204 @@
+   /*
+Barra de rolagem
+*/
+
+*::-webkit-scrollbar{
+    width: 7px;
+  }
+  
+  *::-webkit-scrollbar-track{
+    width: 9px;
+    box-shadow: inset 0 0 .3rem #0603b4;
+    background-color: #000000;
+  }
+  
+  *::-webkit-scrollbar-thumb{
+    background-color: #0603b4;
+  }
+
+/* Reset básico */
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+html {
+    font-size: 100%;
+    box-sizing: border-box;
+}
+
+body {
+    overflow-x: hidden;
+    font-family: 'Roboto_Mono';
+    line-height: 1.6;
+    min-height: 100vh;
+    background-color: #000000;
+    background-image: url(../static/images/purple_side.webp);
+    background-size: cover;
+    background-position: center;
+    background-repeat: no-repeat;
+    
+}
+
+
+.conteiner {
+    display: flex;               
+    justify-content: center;      
+    align-items: flex-start; 
+    position: relative;           
+}
+
+#logo{  
+    margin-top: 50px;  
+    width: 200px;
+    box-shadow: 0 0 40px rgb(6, 3, 180);
+    border-radius: 50%;
+}
+
+
+#status {
+    display: flex;
+    justify-content: center;  
+    align-items: center;  
+    margin-top: 60px; 
+    position: relative; 
+    gap: 30px;  
+               
+}
+
+
+#info {
+    text-align: center;      
+    padding: 20px;            
+    border: 1px solid #0603b4;   
+    border-radius: 8px;       
+    background-color: rgba(0, 0, 0, 0.7);
+    box-shadow: 0 4px 8px rgba(6, 3, 180, 0.3); 
+    width: 80%;               
+    max-width: 800px;   
+    color: aliceblue;      
+}
+
+
+#cube {
+    margin-left: 2rem;
+    display: flex;
+    justify-content: center;  
+    align-items: center;      
+                
+  }
+
+
+#cube-container {
+    box-sizing: border-box;
+    transform-style: preserve-3d;
+    position: relative; 
+    width: 50px;  
+    height: 50px; 
+    transform: translate(-50%, -50%);
+    animation: spin 5s infinite linear;    
+    
+}
+  
+.face {
+    width: 50px; 
+    height: 50px; 
+    position: absolute;
+    border: 1px solid #000000;
+    background: transparent;
+    background-image: url(../static/images/pngegg.png);
+    box-shadow: 0px 0px 150px #0603b4;
+    filter: drop-shadow(0px 0px 33px rgb(6, 3, 180));
+}
+  
+  .face.top {
+transform: rotateX(90deg) translateZ(25px); 
+}
+  
+.face.right {
+    transform: rotateY(90deg) translateZ(25px); 
+}
+  
+.face.left {
+    transform: rotateY(-90deg) translateZ(25px); 
+}
+  
+.face.bottom {
+    transform: rotateX(-90deg) translateZ(25px); 
+}
+  
+.face.back {
+    transform: rotateY(180deg) translateZ(25px); 
+}
+  
+.face.front {
+    transform: translateZ(25px); 
+}
+  
+  /* Animação para rotacionar o cubo em seu próprio eixo */
+  @keyframes spin {
+    0% {
+      transform: translate(-50%, -50%) rotateX(0deg) rotateY(0deg);
+    }
+    100% {
+      transform: translate(-50%, -50%) rotateX(360deg) rotateY(360deg);
+    }
+}
+
+
+footer {
+    background-color: #000000;
+    color: white;
+    text-align: center;
+    padding: 10px 0;
+    position: relative;
+    bottom: 0 !important;
+    margin: 0;    
+    justify-content: center; 
+    align-items: center; 
+    width: 100%;
+    z-index: 10;
+}
+
+footer::before {
+    content: "";
+    display: block;
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 1px; 
+    background:rgb(6, 3, 180); 
+    box-shadow: 0px 5px 25px 5px rgba(6, 3, 180, 0.3); 
+}
+
+
+#text-footer a{
+    color: white;
+    text-decoration: none;
+}
+
+
+.footer-links {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+    display: flex; 
+    justify-content: center;
+    gap: 50px;
+}
+
+.footer-links li {
+    display: inline-block;
+    margin-right: 15px;
+}
+
+.footer-links li a {
+    color: white;
+    text-decoration: none;
+}
+
+.footer-links li a :hover {
+    text-decoration: underline;
+}

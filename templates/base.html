@@ -1,0 +1,225 @@
+<!-- templates/base.html -->
+<!-- 
+    ============================================================================
+    TEMPLATE BASE DO DREAMWALKER PLANE
+    ============================================================================
+    Todas as páginas herdam este layout.
+    Inclui:
+    - Tailwind CSS (utility-first, responsivo)
+    - Fontes personalizadas (Orbitron, Roboto Mono)
+    - Menu lateral com cubo místico
+    - Footer com links de políticas
+    - Sistema de flash messages (alertas)
+    ============================================================================
+-->
+
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+    <meta name="description" content="DreamWalker Plane - Portal de contos de mistério e experiências oníricas. Mergulhe em mundos desconhecidos.">
+    <meta name="author" content="Amiraldo Rodrigues">
+    
+    <title>{% block title %}DreamWalker Plane{% endblock %}</title>
+    
+    <!-- ==================== TAILWIND CSS ==================== -->
+    <!-- CDN oficial - utility-first, responsivo, curva de aprendizado rápida -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    
+    <!-- Customização do tema (cores escuras, místicas) -->
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        'dream-purple': '#0603b4',
+                        'dream-purple-light': '#3a36ff',
+                        'dream-dark': '#000000',
+                        'dream-gray': '#0a0a0a',
+                        'dream-light': '#1a1a1a',
+                    },
+                    fontFamily: {
+                        'orbitron': ['Orbitron', 'monospace'],
+                        'roboto-mono': ['Roboto Mono', 'monospace'],
+                    },
+                    boxShadow: {
+                        'dream': '0 0 20px #0603b4',
+                        'dream-lg': '0 0 40px #0603b4',
+                        'dream-sm': '0 0 10px #0603b4',
+                    },
+                    animation: {
+                        'spin-slow': 'spin 8s linear infinite',
+                        'pulse-glow': 'pulse-glow 2s ease-in-out infinite',
+                    },
+                    keyframes: {
+                        'pulse-glow': {
+                            '0%, 100%': { textShadow: '0 0 5px #0603b4' },
+                            '50%': { textShadow: '0 0 20px #0603b4, 0 0 30px #3a36ff' },
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+    
+    <!-- ==================== FONTES PERSONALIZADAS ==================== -->
+    <!-- Google Fonts como fallback, mas suas fontes locais são priorizadas via CSS -->
+    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;500;600;700;800;900&family=Roboto+Mono:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    
+    <!-- ==================== BOOTSTRAP ICONS ==================== -->
+    <!-- Você já usa, mantemos para os ícones -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+    
+    <!-- ==================== ESTILOS CUSTOMIZADOS ==================== -->
+    <!-- Seus estilos místicos (cubos, animações, barra de rolagem) -->
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/custom.css') }}">
+    
+    <!-- Favicon -->
+    <link rel="icon" type="image/png" href="{{ url_for('static', filename='images/amiraldo_logo_transparent_white.png') }}">
+    
+    <!-- Bloco para CSS adicional específico de cada página -->
+    {% block extra_css %}{% endblock %}
+</head>
+
+<body class="bg-dream-dark text-gray-300 font-roboto-mono antialiased overflow-x-hidden min-h-screen flex flex-col">
+    
+    <!-- ==================== MENU MOBILE (ÍCONE HAMBÚRGUER) ==================== -->
+    <div class="fixed top-4 right-4 z-50 cursor-pointer md:hidden">
+        <i class="bi bi-list text-white text-3xl bg-dream-dark rounded-full w-12 h-12 flex items-center justify-center shadow-dream hover:shadow-dream-lg transition-all duration-300 menu-mobile"></i>
+    </div>
+    
+    <!-- ==================== MENU LATERAL (ASIDE) ==================== -->
+    <!-- 
+        Mesmo conceito do seu código original:
+        - Inicialmente escondido (left: -400px)
+        - Quando ativo, left: 0
+        - Com transição suave
+    -->
+    <aside id="menu-responsive" class="fixed top-0 left-[-400px] w-80 md:w-96 h-full bg-dream-dark z-40 transition-all duration-500 ease-in-out overflow-y-auto shadow-2xl border-r border-dream-purple/30">
+        <div class="flex flex-col items-center py-8 px-4">
+            
+            <!-- Logo -->
+            <img src="{{ url_for('static', filename='images/amiraldo_logo_transparent_white.png') }}" 
+                 alt="DreamWalker Logo" 
+                 class="w-40 h-auto rounded-full shadow-dream mb-6">
+            
+            <!-- Título místico -->
+            <h1 class="font-orbitron text-xl text-white text-center mb-8 animate-pulse-glow">DreamWalker Plane</h1>
+            
+            <!-- Navegação Principal -->
+            <nav class="flex flex-col items-center gap-4 w-full">
+                <a href="{{ url_for('main.index') }}" class="btn-option-nav">Início</a>
+                <a href="{{ url_for('main.contos') }}" class="btn-option-nav">Contos</a>
+                <a href="{{ url_for('relatos.mural') }}" class="btn-option-nav">Mural de Relatos</a>
+                <a href="{{ url_for('doacoes.doacoes') }}" class="btn-option-nav">Doações</a>
+                <a href="{{ url_for('contato.contato') }}" class="btn-option-nav">Contato</a>
+                <a href="{{ url_for('main.sonhar') }}" class="btn-option-nav">O Sonhar</a>
+            </nav>
+            
+            <!-- Cubo Místico (seu efeito original) -->
+            <div class="mt-12 relative w-12 h-12 mx-auto" id="cube-container-aside">
+                <div class="face_ top"></div>
+                <div class="face_ right"></div>
+                <div class="face_ bottom"></div>
+                <div class="face_ left"></div>
+                <div class="face_ back"></div>
+                <div class="face_ front"></div>
+            </div>
+            
+            <!-- Links Sociais (opcional) -->
+            <div class="mt-8 flex gap-6">
+                <a href="https://www.instagram.com/dreamwalker_plane/" target="_blank" class="text-dream-purple hover:text-dream-purple-light text-2xl transition">
+                    <i class="bi bi-instagram"></i>
+                </a>
+                <a href="https://www.facebook.com/profile.php?id=61570894916265" target="_blank" class="text-dream-purple hover:text-dream-purple-light text-2xl transition">
+                    <i class="bi bi-facebook"></i>
+                </a>
+            </div>
+        </div>
+    </aside>
+    
+    <!-- ==================== CONTEÚDO PRINCIPAL ==================== -->
+    <main class="flex-grow">
+        {% block content %}{% endblock %}
+    </main>
+    
+    <!-- ==================== FOOTER ==================== -->
+    <footer class="bg-dream-dark text-white text-center py-4 relative border-t border-dream-purple/50 mt-auto">
+        <div class="container mx-auto px-4">
+            <p class="text-sm">&copy; <span id="current-year"></span> 
+                <a href="#" class="hover:text-dream-purple transition">Amiraldo Rodrigues.</a> 
+                Todos os direitos reservados.
+            </p>
+            <ul class="flex justify-center gap-6 mt-2 text-xs">
+                <li><a href="{{ url_for('main.politica') }}" class="text-gray-400 hover:text-dream-purple transition">Política de Privacidade</a></li>
+                <li><a href="{{ url_for('main.termosuso') }}" class="text-gray-400 hover:text-dream-purple transition">Termos de Uso</a></li>
+            </ul>
+        </div>
+    </footer>
+    
+    <!-- ==================== ALERTAS (FLASH MESSAGES) ==================== -->
+    <div class="fixed top-20 left-1/2 transform -translate-x-1/2 z-50 w-full max-w-md px-4">
+        {% with messages = get_flashed_messages(with_categories=true) %}
+            {% if messages %}
+                {% for category, message in messages %}
+                    <div class="alert-dream rounded-lg px-4 py-3 mb-2 shadow-lg 
+                                {% if category == 'success' %}bg-green-600 text-white border-l-4 border-green-300
+                                {% elif category == 'danger' %}bg-red-600 text-white border-l-4 border-red-300
+                                {% elif category == 'warning' %}bg-yellow-500 text-white border-l-4 border-yellow-300
+                                {% else %}bg-dream-purple text-white border-l-4 border-white{% endif %}">
+                        <div class="flex items-center gap-2">
+                            {% if category == 'success' %}
+                                <i class="bi bi-check-circle-fill"></i>
+                            {% elif category == 'danger' %}
+                                <i class="bi bi-exclamation-triangle-fill"></i>
+                            {% elif category == 'warning' %}
+                                <i class="bi bi-exclamation-circle-fill"></i>
+                            {% else %}
+                                <i class="bi bi-info-circle-fill"></i>
+                            {% endif %}
+                            <span class="text-sm">{{ message }}</span>
+                        </div>
+                    </div>
+                {% endfor %}
+            {% endif %}
+        {% endwith %}
+    </div>
+    
+    <!-- ==================== SCRIPTS ==================== -->
+    <!-- Seu JS existente (menu, animações) -->
+    <script src="{{ url_for('static', filename='js/script.js') }}"></script>
+    
+    <!-- Script para auto-fechar alerts -->
+    <script>
+        // Fecha os alerts automaticamente após 5 segundos
+        setTimeout(() => {
+            document.querySelectorAll('.alert-dream').forEach(alert => {
+                alert.style.transition = 'opacity 0.5s';
+                alert.style.opacity = '0';
+                setTimeout(() => alert.remove(), 500);
+            });
+        }, 5000);
+        
+        // Ano corrente no footer
+        document.getElementById('current-year').textContent = new Date().getFullYear();
+        
+        // Menu mobile toggle
+        const menuMobile = document.querySelector('.menu-mobile');
+        const menuResponsive = document.getElementById('menu-responsive');
+        
+        if (menuMobile) {
+            menuMobile.addEventListener('click', () => {
+                const isOpen = menuResponsive.style.left === '0px';
+                menuResponsive.style.left = isOpen ? '-400px' : '0';
+                menuMobile.classList.toggle('bi-list');
+                menuMobile.classList.toggle('bi-x');
+                document.body.style.overflow = isOpen ? 'auto' : 'hidden';
+            });
+        }
+    </script>
+    
+    <!-- Bloco para scripts adicionais específicos de cada página -->
+    {% block extra_js %}{% endblock %}
+</body>
+</html>

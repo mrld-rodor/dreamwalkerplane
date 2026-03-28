@@ -1,0 +1,94 @@
+<!-- 
+    ============================================================================
+    CONTOS.HTML - DreamWalker Plane
+    ============================================================================
+    Lista todos os contos disponíveis com opções de download e compra
+    ============================================================================
+-->
+
+{% extends "base.html" %}
+
+{% block title %}Contos - DreamWalker Plane{% endblock %}
+
+{% block content %}
+<div class="bg-mystic min-h-screen">
+    
+    <div class="container mx-auto px-4 py-8">
+        
+        <!-- Logo -->
+        <div class="flex justify-center mt-8">
+            <img src="{{ url_for('static', filename='images/amiraldo_logo_transparent_white.png') }}" 
+                 alt="DreamWalker Logo" 
+                 class="w-40 md:w-48 h-auto rounded-full shadow-dream">
+        </div>
+        
+        <!-- Seção de introdução -->
+        <div class="max-w-3xl mx-auto mt-8 text-center" data-anime="down">
+            <p class="text-dream-purple text-xl font-orbitron">.:.</p>
+            <p class="text-gray-300 leading-relaxed mt-4">
+                Imagine uma linha do tempo como uma cachoeira que flui através dos sonhos. 
+                Cada conto é um fragmento de sonho que emerge dessa corrente, revelando-se 
+                para aqueles prontos a desvendar seus segredos. No topo da linha, sempre 
+                estará o mais recente desses fragmentos, vibrando com intensidade, guiando 
+                você para uma nova exploração onírica.
+            </p>
+        </div>
+        
+        <!-- Título dos fragmentos -->
+        <h2 class="text-2xl md:text-3xl font-orbitron text-center text-white mt-12 mb-8 glow-text">
+            Fragmentos Oníricos
+        </h2>
+        
+        <!-- Lista de contos -->
+        <div class="max-w-3xl mx-auto space-y-6">
+            
+            {% for conto in contos %}
+            <div class="dream-card p-6" data-anime="up">
+                <!-- Cabeçalho do conto -->
+                <div class="flex items-center gap-3 mb-4">
+                    <div class="w-3 h-3 bg-dream-purple rounded-full shadow-dream-sm"></div>
+                    <span class="text-dream-purple font-orbitron text-sm">{{ conto.data }}</span>
+                    <div class="flex-1"></div>
+                    <span class="text-gray-500 text-xs">CONTO - {{ conto.id }}</span>
+                </div>
+                
+                <!-- Título -->
+                <h3 class="text-xl md:text-2xl font-orbitron text-white mb-3">{{ conto.titulo }}</h3>
+                
+                <!-- Descrição -->
+                <p class="text-gray-300 text-sm md:text-base leading-relaxed mb-4">
+                    {{ conto.descricao }}
+                </p>
+                
+                <!-- Botões de ação -->
+                <div class="flex flex-col sm:flex-row gap-3 mt-4">
+                    <a href="{{ url_for('main.download_file', filename=conto.arquivo) }}" 
+                       class="flex-1 text-center bg-transparent border border-dream-purple text-dream-purple hover:bg-dream-purple hover:text-white py-2 rounded-lg transition-all duration-300">
+                        <i class="bi bi-download mr-2"></i> Download Grátis
+                    </a>
+                    <a href="{{ conto.hotmart_link }}" 
+                       target="_blank"
+                       class="flex-1 text-center bg-dream-purple hover:bg-dream-purple-light text-white py-2 rounded-lg transition-all duration-300">
+                        <i class="bi bi-cart3 mr-2"></i> Comprar na Hotmart
+                    </a>
+                </div>
+            </div>
+            {% endfor %}
+            
+        </div>
+        
+        <!-- Cubo místico -->
+        <div class="flex justify-center mt-12 mb-12">
+            <div id='cube-container' class="w-12 h-12 md:w-16 md:h-16">
+                <div class="face top"></div>
+                <div class="face right"></div>
+                <div class="face bottom"></div>
+                <div class="face left"></div>
+                <div class="face back"></div>
+                <div class="face front"></div>
+            </div>
+        </div>
+        
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,113 @@
+<!-- 
+    ============================================================================
+    ADMIN_RELATOS.HTML - DreamWalker Plane
+    ============================================================================
+    Painel administrativo para aprovar ou rejeitar relatos enviados pelos usuários
+    ============================================================================
+-->
+
+{% extends "base.html" %}
+
+{% block title %}Moderação - DreamWalker Plane{% endblock %}
+
+{% block content %}
+<div class="bg-mystic min-h-screen py-12">
+    
+    <div class="container mx-auto px-4 max-w-4xl">
+        
+        <!-- Cabeçalho -->
+        <div class="flex justify-between items-center mb-8 flex-wrap gap-4">
+            <div>
+                <h1 class="text-2xl md:text-3xl font-orbitron text-white glow-text">
+                    <i class="bi bi-shield-shaded mr-2"></i> Moderação de Relatos
+                </h1>
+                <p class="text-gray-400 mt-2">Relatos aguardando aprovação</p>
+            </div>
+            <a href="{{ url_for('relatos.admin_logout') }}" 
+               class="bg-red-600/80 hover:bg-red-600 text-white px-4 py-2 rounded-lg transition">
+                <i class="bi bi-box-arrow-right mr-2"></i> Sair
+            </a>
+        </div>
+        
+        <!-- Contador de pendentes -->
+        <div class="bg-dream-purple/20 rounded-lg p-4 mb-8 text-center">
+            <span class="text-white font-orbitron">
+                <i class="bi bi-clock-history mr-2"></i> 
+                {{ relatos|length }} relato(s) aguardando moderação
+            </span>
+        </div>
+        
+        <!-- Lista de relatos pendentes -->
+        {% if relatos %}
+            <div class="space-y-6">
+                {% for relato in relatos %}
+                <div class="dream-card p-6" data-anime="up">
+                    
+                    <!-- Informações do relato -->
+                    <div class="flex justify-between items-start mb-4 flex-wrap gap-2">
+                        <div>
+                            <div class="flex items-center gap-2 mb-1">
+                                <i class="bi bi-person-circle text-dream-purple"></i>
+                                <span class="text-dream-purple font-orbitron">{{ relato.autor }}</span>
+                                <span class="text-gray-500 text-xs">
+                                    <i class="bi bi-calendar3 ml-2"></i> Enviado em: {{ relato.data_envio.strftime('%d/%m/%Y %H:%M') }}
+                                </span>
+                            </div>
+                            <h3 class="text-xl font-orbitron text-white">{{ relato.titulo }}</h3>
+                        </div>
+                        <span class="bg-yellow-500/20 text-yellow-400 text-xs px-3 py-1 rounded-full">
+                            <i class="bi bi-hourglass-split mr-1"></i> Pendente
+                        </span>
+                    </div>
+                    
+                    <!-- Conteúdo -->
+                    <div class="bg-dream-gray/50 rounded-lg p-4 mb-4 max-h-64 overflow-y-auto">
+                        <p class="text-gray-300 whitespace-pre-wrap">{{ relato.conteudo }}</p>
+                    </div>
+                    
+                    <!-- Informações técnicas (para moderação) -->
+                    <div class="text-gray-500 text-xs mb-4 border-t border-dream-purple/30 pt-3">
+                        <p><i class="bi bi-hdd-network"></i> IP: {{ relato.ip_remetente or 'Não registrado' }}</p>
+                    </div>
+                    
+                    <!-- Botões de ação -->
+                    <div class="flex gap-4">
+                        <a href="{{ url_for('relatos.aprovar_relato', relato_id=relato.id) }}" 
+                           class="flex-1 bg-green-600 hover:bg-green-700 text-white py-2 rounded-lg text-center transition text-sm font-orbitron">
+                            <i class="bi bi-check-lg mr-1"></i> Aprovar
+                        </a>
+                        <a href="{{ url_for('relatos.rejeitar_relato', relato_id=relato.id) }}" 
+                           class="flex-1 bg-red-600 hover:bg-red-700 text-white py-2 rounded-lg text-center transition text-sm font-orbitron"
+                           onclick="return confirm('Tem certeza que deseja rejeitar este relato?')">
+                            <i class="bi bi-x-lg mr-1"></i> Rejeitar
+                        </a>
+                    </div>
+                    
+                </div>
+                {% endfor %}
+            </div>
+        {% else %}
+            <!-- Mensagem quando não há pendentes -->
+            <div class="dream-card p-12 text-center">
+                <i class="bi bi-check2-all text-6xl text-green-500 mb-4"></i>
+                <h3 class="text-xl font-orbitron text-white mb-2">Tudo em dia!</h3>
+                <p class="text-gray-400">
+                    Não há relatos aguardando moderação no momento.
+                </p>
+                <a href="{{ url_for('relatos.mural') }}" 
+                   class="inline-block mt-6 text-dream-purple hover:text-dream-purple-light transition">
+                    <i class="bi bi-eye mr-1"></i> Ver Mural de Relatos
+                </a>
+            </div>
+        {% endif %}
+        
+        <!-- Link para voltar ao mural -->
+        <div class="text-center mt-8">
+            <a href="{{ url_for('relatos.mural') }}" class="text-gray-500 hover:text-dream-purple transition">
+                <i class="bi bi-arrow-left mr-1"></i> Voltar ao Mural
+            </a>
+        </div>
+        
+    </div>
+</div>
+{% endblock %}

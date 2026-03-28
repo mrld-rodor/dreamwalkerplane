@@ -1,0 +1,237 @@
+/* static/css/custom.css */
+/* 
+    ============================================================================
+    ESTILOS CUSTOMIZADOS DO DREAMWALKER PLANE
+    ============================================================================
+    Este arquivo complementa o Tailwind CSS com:
+    - Fontes locais (Orbitron, Roboto Mono)
+    - Barra de rolagem personalizada
+    - Cubo 3D místico
+    - Animações de aparecimento
+    - Estilos dos botões do menu
+    ============================================================================
+*/
+
+/* ==================== FONTES LOCAIS ==================== */
+@font-face {
+    font-family: 'Orbitron';
+    src: url('../fonts/Orbitron/Orbitron-VariableFont_wght.ttf') format('truetype');
+    font-weight: 100 900;
+    font-style: normal;
+    font-display: swap;
+}
+
+@font-face {
+    font-family: 'Roboto Mono';
+    src: url('../fonts/Roboto_Mono/RobotoMono-VariableFont_wght.ttf') format('truetype');
+    font-weight: 100 700;
+    font-style: normal;
+    font-display: swap;
+}
+
+/* ==================== BARRA DE ROLAGEM PERSONALIZADA ==================== */
+::-webkit-scrollbar {
+    width: 7px;
+}
+
+::-webkit-scrollbar-track {
+    background: #000000;
+    box-shadow: inset 0 0 3px #0603b4;
+}
+
+::-webkit-scrollbar-thumb {
+    background: #0603b4;
+    border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+    background: #3a36ff;
+}
+
+/* ==================== BOTÕES DO MENU LATERAL ==================== */
+.btn-option-nav {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-family: 'Orbitron', monospace;
+    font-size: 1.125rem;
+    border: 2px solid #0603b4;
+    padding: 0.75rem 1.5rem;
+    border-radius: 0.375rem;
+    box-shadow: 0 0 20px #0603b4;
+    transition: all 0.3s ease;
+    cursor: pointer;
+    color: #ffffff;
+    background-color: #000000;
+    background-image: url('../images/star_button.webp');
+    background-size: cover;
+    background-position: center;
+    width: 100%;
+    max-width: 269px;
+    text-align: center;
+    text-decoration: none;
+}
+
+.btn-option-nav:hover {
+    box-shadow: 0 0 40px #0603b4;
+    transform: scale(1.05);
+}
+
+.btn-option-nav:active {
+    transform: scale(1.1);
+}
+
+/* ==================== CUBO MÍSTICO (ASIDE) ==================== */
+#cube-container-aside {
+    transform-style: preserve-3d;
+    width: 50px;
+    height: 50px;
+    margin: 0 auto;
+    position: relative;
+    animation: spin 5s infinite linear;
+}
+
+.face_ {
+    position: absolute;
+    width: 50px;
+    height: 50px;
+    border: 2px solid #0603b4;
+    background: #000000;
+    box-shadow: 0 0 20px #0603b4;
+}
+
+.face_.top { transform: rotateX(90deg) translateZ(25px); }
+.face_.right { transform: rotateY(90deg) translateZ(25px); }
+.face_.left { transform: rotateY(-90deg) translateZ(25px); }
+.face_.bottom { transform: rotateX(-90deg) translateZ(25px); }
+.face_.back { transform: rotateY(180deg) translateZ(25px); }
+.face_.front { transform: translateZ(25px); }
+
+/* ==================== CUBO MÍSTICO (MAIN) ==================== */
+#cube-container {
+    transform-style: preserve-3d;
+    width: 50px;
+    height: 50px;
+    margin: 0 auto;
+    position: relative;
+    animation: spin 5s infinite linear;
+}
+
+.face {
+    position: absolute;
+    width: 50px;
+    height: 50px;
+    border: 1px solid #000000;
+    background: transparent;
+    background-image: url('../images/pngegg.png');
+    background-size: cover;
+    box-shadow: 0 0 20px #0603b4;
+}
+
+.face.top { transform: rotateX(90deg) translateZ(25px); }
+.face.right { transform: rotateY(90deg) translateZ(25px); }
+.face.left { transform: rotateY(-90deg) translateZ(25px); }
+.face.bottom { transform: rotateX(-90deg) translateZ(25px); }
+.face.back { transform: rotateY(180deg) translateZ(25px); }
+.face.front { transform: translateZ(25px); }
+
+@keyframes spin {
+    0% { transform: rotateX(0deg) rotateY(0deg); }
+    100% { transform: rotateX(360deg) rotateY(360deg); }
+}
+
+/* ==================== ANIMAÇÕES DE APARECIMENTO ==================== */
+[data-anime] {
+    opacity: 0;
+    transition: 0.8s ease-out;
+}
+
+[data-anime="down"] { transform: translate3d(0, -50px, 0); }
+[data-anime="up"] { transform: translate3d(0, 50px, 0); }
+[data-anime="left"] { transform: translate3d(-50px, 0, 0); }
+[data-anime="right"] { transform: translate3d(50px, 0, 0); }
+[data-anime="fade"] { transform: translate3d(0, 0, 0); }
+
+[data-anime].animate {
+    opacity: 1;
+    transform: translate3d(0, 0, 0);
+}
+
+/* ==================== ALERTAS ==================== */
+.alert-dream {
+    animation: slideDown 0.3s ease-out;
+}
+
+@keyframes slideDown {
+    from {
+        opacity: 0;
+        transform: translate(-50%, -100%);
+    }
+    to {
+        opacity: 1;
+        transform: translate(-50%, 0);
+    }
+}
+
+/* ==================== BACKGROUND MÍSTICO ==================== */
+.bg-mystic {
+    background-color: #000000;
+    background-image: url('../images/purple_side.webp');
+    background-size: cover;
+    background-position: center;
+    background-repeat: no-repeat;
+    background-attachment: fixed;
+}
+
+/* ==================== EFEITO DE BRILHO NO TEXTO ==================== */
+.glow-text {
+    text-shadow: 0 0 10px #0603b4, 0 0 20px #0603b4;
+}
+
+/* ==================== BORDA MÍSTICA ==================== */
+.dream-border {
+    border-image: linear-gradient(45deg, #0603b4, #3a36ff) 1;
+    border-style: solid;
+    border-width: 1px;
+}
+
+/* ==================== CARDS COM FUNDO TRANSPARENTE ==================== */
+.dream-card {
+    background-color: rgba(0, 0, 0, 0.7);
+    border: 1px solid #0603b4;
+    border-radius: 1rem;
+    box-shadow: 0 0 20px rgba(6, 3, 180, 0.3);
+    transition: all 0.3s ease;
+}
+
+.dream-card:hover {
+    box-shadow: 0 0 30px rgba(6, 3, 180, 0.5);
+    transform: translateY(-2px);
+}
+
+/* ==================== RESPONSIVIDADE ADICIONAL ==================== */
+@media (max-width: 768px) {
+    .btn-option-nav {
+        font-size: 0.875rem;
+        padding: 0.5rem 1rem;
+        max-width: 220px;
+    }
+    
+    #cube-container-aside,
+    #cube-container {
+        width: 40px;
+        height: 40px;
+    }
+    
+    .face_, .face {
+        width: 40px;
+        height: 40px;
+    }
+    
+    .face_.top, .face.top { transform: rotateX(90deg) translateZ(20px); }
+    .face_.right, .face.right { transform: rotateY(90deg) translateZ(20px); }
+    .face_.left, .face.left { transform: rotateY(-90deg) translateZ(20px); }
+    .face_.bottom, .face.bottom { transform: rotateX(-90deg) translateZ(20px); }
+    .face_.back, .face.back { transform: rotateY(180deg) translateZ(20px); }
+    .face_.front, .face.front { transform: translateZ(20px); }
+}
