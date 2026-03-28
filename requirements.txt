@@ -1,0 +1,22 @@
+# Core
+Flask==3.1.0
+python-dotenv==1.0.1
+gunicorn==23.0.0
+
+# Database - SQLAlchemy para MariaDB/MySQL
+Flask-SQLAlchemy==3.1.1
+PyMySQL==1.1.1          # Driver para MySQL/MariaDB
+cryptography==44.0.0    # Para conexão segura
+
+# Forms e Validação
+Flask-WTF==1.2.1
+WTForms==3.1.2
+email-validator==2.1.1
+
+# Seus existentes
+requests==2.32.3
+PyYAML==6.0.2
+blinker==1.9.0
+
+# Extras úteis
+bleach==6.1.0           # Sanitizar HTML dos relatos
