@@ -235,3 +235,85 @@
     .face_.back, .face.back { transform: rotateY(180deg) translateZ(20px); }
     .face_.front, .face.front { transform: translateZ(20px); }
 }
+
+
+/* ==================== NAVEGAÇÃO DESKTOP ==================== */
+.nav-link-desktop {
+    font-family: 'Orbitron', monospace;
+    font-size: 0.75rem;
+    letter-spacing: 1px;
+    padding: 0.5rem 0.875rem;
+    color: #9ca3af;
+    text-transform: uppercase;
+    transition: all 0.2s ease;
+    border-radius: 0;
+}
+
+.nav-link-desktop:hover {
+    color: #ffffff;
+    background-color: #111111;
+}
+
+.nav-link-desktop.active {
+    color: #ffffff;
+    border-bottom: 1px solid #ffffff;
+}
+
+/* ==================== NAVEGAÇÃO MOBILE ==================== */
+.btn-option-nav-mobile {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-family: 'Orbitron', monospace;
+    font-size: 0.8rem;
+    letter-spacing: 1px;
+    border: 1px solid #222222;
+    padding: 0.6rem 1rem;
+    transition: all 0.2s ease;
+    cursor: pointer;
+    color: #9ca3af;
+    background-color: #000000;
+    width: 100%;
+    max-width: 240px;
+    text-align: center;
+    text-decoration: none;
+    text-transform: uppercase;
+}
+
+.btn-option-nav-mobile:hover {
+    border-color: #666666;
+    color: #ffffff;
+}
+
+/* ==================== CUBO DO HEADER ==================== */
+#cube-header {
+    transform-style: preserve-3d;
+    animation: spin 8s infinite linear;
+}
+
+.cube-face {
+    position: absolute;
+    width: 24px;
+    height: 24px;
+    border: 0.5px solid #444444;
+    background: transparent;
+}
+
+.cube-face.top { transform: rotateX(90deg) translateZ(12px); }
+.cube-face.right { transform: rotateY(90deg) translateZ(12px); }
+.cube-face.left { transform: rotateY(-90deg) translateZ(12px); }
+.cube-face.bottom { transform: rotateX(-90deg) translateZ(12px); }
+.cube-face.back { transform: rotateY(180deg) translateZ(12px); }
+.cube-face.front { transform: translateZ(12px); }
+
+/* Ajuste do body para compensar o header fixo */
+body {
+    padding-top: 64px;
+}
+
+/* Responsividade */
+@media (max-width: 768px) {
+    body {
+        padding-top: 56px;
+    }
+}

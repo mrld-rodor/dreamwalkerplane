@@ -1,41 +1,95 @@
 """
 control/contador.py
 =============================================================================
-DreamWalker Plane - Contador de Visitas e Scanner de IP
+DreamWalker Plane - Contador de Visitas
 =============================================================================
 
-Este arquivo contém:
-1. FUNÇÕES DE CONTADOR (para o site funcionar)
-   - inicializar_contador()
-   - obter_contadores() 
-   - atualizar_contadores()
-   - iniciar_pingador()
-   
-2. FUNÇÕES DE SCANNER DE IP (sua implementação avançada)
-   - classificar_ip()
-   - obter_localizacao()
-   - detectar_os_ttl()
-   - fingerprint_os()
-   - analisar_ip()
+Funcionalidades:
+- inicializar_contador(): Cria o arquivo de contador se não existir
+- obter_contadores(): Retorna (visitantes, downloads, lista_visitas)
+- atualizar_contadores(): Atualiza contadores e registra visita
+- analisar_ip(): Analisa IP do visitante (localização, tipo, OS)
 =============================================================================
 """
 
-import threading
-import time
 import os
 import requests
 import yaml
 import socket
 import ipaddress
 from datetime import datetime
-from scapy.all import IP, ICMP, sr1
+
 
 # ============================================================================
-# PARTE 1: CONTADOR DE VISITAS (NECESSÁRIO PARA O SITE)
+# CONFIGURAÇÃO
 # ============================================================================
 
-# Caminho para o arquivo que irá armazenar os dados
 contador_file = 'contador.txt'
+
+
+# ============================================================================
+# FUNÇÕES DE ANÁLISE DE IP
+# ============================================================================
+
+def classificar_ip(ip):
+    """Classifica o IP como Loopback, Privado ou Público"""
+    try:
+        ip_obj = ipaddress.ip_address(ip)
+
+        if ip_obj.is_loopback:
+            return "Loopback"
+        elif ip_obj.is_private:
+            return "Privado"
+        else:
+            return "Público"
+
+    except ValueError:
+        return "Inválido"
+
+
+def obter_localizacao_por_ip(ip):
+    """Obtém localização geográfica via ipinfo.io"""
+    try:
+        response = requests.get(f"https://ipinfo.io/{ip}/json", timeout=5)
+
+        if response.status_code != 200:
+            return "Desconhecido"
+
+        dados = response.json()
+
+        cidade = dados.get("city") or "Desconhecido"
+        regiao = dados.get("region") or "Desconhecido"
+        pais = dados.get("country") or "Desconhecido"
+
+        return f"{cidade}, {regiao}, {pais}"
+
+    except Exception:
+        return "Desconhecido"
+
+
+def analisar_ip(ip):
+    """
+    Análise completa de um IP
+    Retorna dicionário com todas as informações
+    """
+    tipo = classificar_ip(ip)
+
+    if tipo == "Público":
+        localizacao = obter_localizacao_por_ip(ip)
+    else:
+        localizacao = "Rede Local"
+
+    return {
+        "ip": ip,
+        "tipo": tipo,
+        "localizacao": localizacao,
+        "timestamp": datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+    }
+
+
+# ============================================================================
+# FUNÇÕES DO CONTADOR
+# ============================================================================
 
 def inicializar_contador():
     """Inicializa o arquivo de contador se não existir"""
@@ -73,7 +127,6 @@ def obter_contadores():
 def atualizar_contadores(visitas=0, downloads=0, ip=None):
     """
     Atualiza os contadores e registra uma nova visita
-    Agora com análise avançada do IP (usando suas funções)
     """
     visitantes, downloads_atual, visitas_lista = obter_contadores()
 
@@ -82,35 +135,32 @@ def atualizar_contadores(visitas=0, downloads=0, ip=None):
 
     agora = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
 
-    # Usa sua função avançada de análise de IP
-    if ip:
-        info_ip = analisar_ip(ip)
-        local = info_ip['localizacao']
-        tipo_ip = info_ip['tipo']
-        os_detectado = info_ip['os']
-        
-        # Cria um registro mais completo da visita
-        registro_visita = {
-            'data': agora,
-            'ip': ip,
-            'tipo': tipo_ip,
-            'local': local,
-            'os': os_detectado
-        }
+    # Análise do IP
+    if ip and ip not in ['127.0.0.1', 'localhost']:
+        try:
+            info_ip = analisar_ip(ip)
+            local = info_ip['localizacao']
+            tipo_ip = info_ip['tipo']
+        except Exception:
+            local = "Desconhecido"
+            tipo_ip = "Desconhecido"
     else:
-        registro_visita = {
-            'data': agora,
-            'ip': 'desconhecido',
-            'tipo': 'desconhecido',
-            'local': 'Desconhecido',
-            'os': 'desconhecido'
-        }
+        local = "Localhost"
+        tipo_ip = "Privado"
+    
+    # Registro da visita
+    registro_visita = {
+        'data': agora,
+        'ip': ip if ip else 'desconhecido',
+        'tipo': tipo_ip,
+        'local': local
+    }
 
     visitas_lista.append(registro_visita)
 
-    # Mantém apenas as últimas 1000 visitas para não crescer demais
-    if len(visitas_lista) > 1000:
-        visitas_lista = visitas_lista[-1000:]
+    # Mantém apenas as últimas 500 visitas
+    if len(visitas_lista) > 500:
+        visitas_lista = visitas_lista[-500:]
 
     with open(contador_file, 'w') as f:
         data = {
@@ -121,132 +171,32 @@ def atualizar_contadores(visitas=0, downloads=0, ip=None):
         yaml.dump(data, f, default_flow_style=False)
 
 
+# # ============================================================================
+# # TESTE (executado apenas se rodar este arquivo diretamente)
+# # ============================================================================
 
-# ============================================================================
-# PARTE 2: SCANNER DE IP (SUA IMPLEMENTAÇÃO AVANÇADA)
-# ============================================================================
-
-def classificar_ip(ip):
-    """Classifica o IP como Loopback, Privado ou Público"""
-    try:
-        ip_obj = ipaddress.ip_address(ip)
-
-        if ip_obj.is_loopback:
-            return "Loopback"
-        elif ip_obj.is_private:
-            return "Privado"
-        else:
-            return "Público"
-
-    except ValueError:
-        return "Inválido"
-
-
-def obter_localizacao_geografica(ip):
-    """Obtém localização geográfica via ipinfo.io"""
-    try:
-        response = requests.get(f"https://ipinfo.io/{ip}/json", timeout=5)
-
-        if response.status_code != 200:
-            return "Desconhecido"
-
-        dados = response.json()
-
-        cidade = dados.get("city") or "Desconhecido"
-        regiao = dados.get("region") or "Desconhecido"
-        pais = dados.get("country") or "Desconhecido"
-
-        return f"{cidade}, {regiao}, {pais}"
-
-    except Exception:
-        return "Desconhecido"
-
-
-def detectar_os_ttl(ip):
-    """Detecta sistema operacional baseado no TTL do ICMP"""
-    try:
-        pkt = IP(dst=ip) / ICMP()
-        resposta = sr1(pkt, timeout=2, verbose=0)
-
-        if resposta is None:
-            return "Desconhecido"
-
-        ttl = resposta.ttl
-
-        if ttl <= 64:
-            return "Linux/Unix"
-        elif ttl <= 128:
-            return "Windows"
-        else:
-            return "Network Device"
-
-    except Exception:
-        return "Desconhecido"
-
-
-def pegar_banner(ip, porta):
-    """Tenta obter banner de serviço em uma porta"""
-    try:
-        sock = socket.socket()
-        sock.settimeout(2)
-        sock.connect((ip, porta))
-        banner = sock.recv(1024).decode(errors="ignore").lower()
-        sock.close()
-        return banner
-    except Exception:
-        return ""
-
-
-def detectar_os_banner(banner):
-    """Detecta OS a partir do banner do serviço"""
-    if "windows" in banner:
-        return "Windows"
-    elif "linux" in banner or "ubuntu" in banner or "debian" in banner:
-        return "Linux"
-    elif "unix" in banner:
-        return "Unix"
-    elif "cisco" in banner:
-        return "Cisco"
-    elif "openbsd" in banner or "freebsd" in banner:
-        return "BSD"
-    else:
-        return "Desconhecido"
-
-
-def fingerprint_os(ip):
-    """Combina múltiplas técnicas para identificar o OS"""
-    portas_comuns = [22, 80, 443, 8080, 3306, 5432]
-
-    # Primeiro tenta banner grabbing nas portas comuns
-    for porta in portas_comuns:
-        banner = pegar_banner(ip, porta)
-        os_detectado = detectar_os_banner(banner)
-
-        if os_detectado != "Desconhecido":
-            return os_detectado
-
-    # Fallback: detecção por TTL
-    return detectar_os_ttl(ip)
-
-
-def analisar_ip(ip):
-    """
-    Análise completa de um IP
-    Retorna dicionário com todas as informações
-    """
-    tipo = classificar_ip(ip)
-
-    if tipo == "Público":
-        localizacao = obter_localizacao_geografica(ip)
-        os_detectado = fingerprint_os(ip)
-    else:
-        localizacao = "Rede Local"
-        os_detectado = detectar_os_ttl(ip)  # TTL funciona em rede local
-
-    return {
-        "ip": ip,
-        "tipo": tipo,
-        "localizacao": localizacao,
-        "os": os_detectado,
-        "timestamp": datetime.now().strftime("%Y-%m-%d %H:%M:%S")
-    }
+# if __name__ == '__main__':
+#     """Teste das funcionalidades"""
+#     print("\n" + "="*60)
+#     print("   DREAMWALKER PLANE - TESTE DO CONTADOR")
+#     print("="*60 + "\n")
+    
+#     # Testa inicialização
+#     print("[1] Testando inicialização...")
+#     inicializar_contador()
+    
+#     # Testa atualização com IP público
+#     print("[2] Testando atualização de contador...")
+#     atualizar_contadores(visitas=1, downloads=0, ip='8.8.8.8')
+    
+#     # Testa leitura
+#     print("[3] Testando leitura dos contadores...")
+#     visitantes, downloads, visitas = obter_contadores()
+    
+#     print(f"    Visitantes totais: {visitantes}")
+#     print(f"    Downloads totais: {downloads}")
+#     print(f"    Últimas 3 visitas:")
+#     for v in visitas[-3:]:
+#         print(f"        - {v['data']} | {v['ip']} | {v['local']}")
+    
+#     print("\n[+] Teste concluído com sucesso!")

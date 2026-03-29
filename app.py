@@ -12,7 +12,7 @@ load_dotenv()
 
 # Importa as extensões
 from models import db
-from control.contador import iniciar_pingador, inicializar_contador
+from control.contador import inicializar_contador  # REMOVIDO: iniciar_pingador
 
 # Importa os Blueprints
 from blueprints.main import main_bp
@@ -33,7 +33,6 @@ def create_app():
         raise ValueError("SECRET_KEY não configurada! Defina no .env")
     
     # Banco de dados (MariaDB/MySQL)
-    # Formato: mysql+pymysql://usuario:senha@host:porta/nome_banco
     database_url = os.getenv('DATABASE_URL')
     if not database_url:
         raise ValueError("DATABASE_URL não configurada! Defina no .env")
@@ -46,7 +45,7 @@ def create_app():
         'pool_pre_ping': True,
     }
     
-    # Email (seu código existente usa essas variáveis)
+    # Email
     app.config['MAIL_SERVER'] = os.getenv('MAIL_SERVER', 'smtp.gmail.com')
     app.config['MAIL_PORT'] = int(os.getenv('MAIL_PORT', 587))
     app.config['MAIL_USE_TLS'] = os.getenv('MAIL_USE_TLS', 'True') == 'True'
@@ -65,7 +64,7 @@ def create_app():
     # PayPal
     app.config['PAYPAL_LINK'] = os.getenv('PAYPAL_LINK', 'https://paypal.me/rodriguesxes')
     
-    # Admin (senha para aprovar relatos)
+    # Admin
     app.config['ADMIN_PASSWORD'] = os.getenv('ADMIN_PASSWORD', 'admin123')
     
     # ========== INICIALIZA EXTENSÕES ==========
@@ -73,15 +72,11 @@ def create_app():
     
     # ========== CRIA TABELAS SE NÃO EXISTIREM ==========
     with app.app_context():
-        # Cria as tabelas (apenas se não existirem)
         db.create_all()
         print("[INFO] Banco de dados verificado/criado com sucesso!")
     
-    # ========== INICIALIZA O CONTADOR (SEU CÓDIGO) ==========
+    # ========== INICIALIZA O CONTADOR ==========
     inicializar_contador()
-    
-    # ========== INICIA O PINGADOR EM BACKGROUND ==========
-    iniciar_pingador()
     
     # ========== REGISTRA OS BLUEPRINTS ==========
     app.register_blueprint(main_bp)

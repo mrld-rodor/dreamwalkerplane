@@ -1,0 +1,58 @@
+<!-- 
+    ============================================================================
+    SONHAR.HTML - DreamWalker Plane
+    ============================================================================
+    Página "O Sonhar" - Em desenvolvimento/manutenção
+    ============================================================================
+-->
+
+{% extends "base.html" %}
+
+{% block title %}O Sonhar - DreamWalker Plane{% endblock %}
+
+{% block content %}
+<div class="bg-mystic min-h-screen py-12">
+    
+    <div class="container mx-auto px-4 max-w-4xl">
+        
+        <!-- Logo -->
+        <div class="flex justify-center mt-8">
+            <img src="{{ url_for('static', filename='images/amiraldo_logo_transparent_white.png') }}" 
+                 alt="DreamWalker Logo" 
+                 class="w-40 md:w-48 h-auto rounded-full shadow-dream">
+        </div>
+        
+        <!-- Conteúdo principal -->
+        <div class="max-w-3xl mx-auto mt-12 text-center" data-anime="down">
+            <p class="text-dream-purple text-2xl font-orbitron mb-6">.:.</p>
+            
+            <p class="text-gray-300 leading-relaxed text-base md:text-lg">
+                A construção deste portal está longe de ser simples. 
+                Algo no ar, invisível aos olhos, desafia nossa jornada. 
+                Linhas de código se entrelaçam, mas o progresso é sutil, 
+                como se algo estivesse constantemente a nos observar. 
+                A página está em manutenção, mas não se engane – não é 
+                apenas um processo técnico. Algo mais profundo e misterioso 
+                está em jogo. Cada ajuste parece atrair uma energia estranha, 
+                como se o site estivesse em transição para algo além. 
+                Agradecemos sua paciência, pois o que está por vir não é 
+                apenas uma atualização, mas algo que transcende o esperado. 
+                O portal logo se abrirá, mas até lá, o mistério permanece.
+            </p>
+        </div>
+        
+        <!-- Cubo místico -->
+        <div class="flex justify-center mt-12 mb-12">
+            <div id='cube-container' class="w-12 h-12 md:w-16 md:h-16">
+                <div class="face top"></div>
+                <div class="face right"></div>
+                <div class="face bottom"></div>
+                <div class="face left"></div>
+                <div class="face back"></div>
+                <div class="face front"></div>
+            </div>
+        </div>
+        
+    </div>
+</div>
+{% endblock %}

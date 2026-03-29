@@ -1,15 +1,10 @@
-<!-- templates/base.html -->
 <!-- 
     ============================================================================
-    TEMPLATE BASE DO DREAMWALKER PLANE
+    BASE.HTML - DreamWalker Plane (COM HEADER FIXO)
     ============================================================================
-    Todas as páginas herdam este layout.
-    Inclui:
-    - Tailwind CSS (utility-first, responsivo)
-    - Fontes personalizadas (Orbitron, Roboto Mono)
-    - Menu lateral com cubo místico
-    - Footer com links de políticas
-    - Sistema de flash messages (alertas)
+    - Header fixo com menu horizontal
+    - Menu lateral apenas para mobile
+    - Cubo no canto direito
     ============================================================================
 -->
 
@@ -18,126 +13,154 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
-    <meta name="description" content="DreamWalker Plane - Portal de contos de mistério e experiências oníricas. Mergulhe em mundos desconhecidos.">
+    <meta name="description" content="DreamWalker Plane - Portal de contos de mistério e experiências oníricas.">
     <meta name="author" content="Amiraldo Rodrigues">
     
     <title>{% block title %}DreamWalker Plane{% endblock %}</title>
     
-    <!-- ==================== TAILWIND CSS ==================== -->
-    <!-- CDN oficial - utility-first, responsivo, curva de aprendizado rápida -->
+    <!-- Tailwind CSS CDN -->
     <script src="https://cdn.tailwindcss.com"></script>
     
-    <!-- Customização do tema (cores escuras, místicas) -->
+    <!-- Customização do tema - Minimalista Preto e Branco -->
     <script>
         tailwind.config = {
             theme: {
                 extend: {
                     colors: {
-                        'dream-purple': '#0603b4',
-                        'dream-purple-light': '#3a36ff',
+                        'dream-purple': '#ffffff',
+                        'dream-purple-light': '#666666',
                         'dream-dark': '#000000',
                         'dream-gray': '#0a0a0a',
-                        'dream-light': '#1a1a1a',
+                        'dream-light': '#111111',
                     },
                     fontFamily: {
                         'orbitron': ['Orbitron', 'monospace'],
                         'roboto-mono': ['Roboto Mono', 'monospace'],
                     },
-                    boxShadow: {
-                        'dream': '0 0 20px #0603b4',
-                        'dream-lg': '0 0 40px #0603b4',
-                        'dream-sm': '0 0 10px #0603b4',
-                    },
-                    animation: {
-                        'spin-slow': 'spin 8s linear infinite',
-                        'pulse-glow': 'pulse-glow 2s ease-in-out infinite',
-                    },
-                    keyframes: {
-                        'pulse-glow': {
-                            '0%, 100%': { textShadow: '0 0 5px #0603b4' },
-                            '50%': { textShadow: '0 0 20px #0603b4, 0 0 30px #3a36ff' },
-                        }
-                    }
                 }
             }
         }
     </script>
     
-    <!-- ==================== FONTES PERSONALIZADAS ==================== -->
-    <!-- Google Fonts como fallback, mas suas fontes locais são priorizadas via CSS -->
+    <!-- Google Fonts -->
     <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;500;600;700;800;900&family=Roboto+Mono:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     
-    <!-- ==================== BOOTSTRAP ICONS ==================== -->
-    <!-- Você já usa, mantemos para os ícones -->
+    <!-- Bootstrap Icons -->
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
     
-    <!-- ==================== ESTILOS CUSTOMIZADOS ==================== -->
-    <!-- Seus estilos místicos (cubos, animações, barra de rolagem) -->
+    <!-- Estilos customizados -->
     <link rel="stylesheet" href="{{ url_for('static', filename='css/custom.css') }}">
     
     <!-- Favicon -->
     <link rel="icon" type="image/png" href="{{ url_for('static', filename='images/amiraldo_logo_transparent_white.png') }}">
     
-    <!-- Bloco para CSS adicional específico de cada página -->
     {% block extra_css %}{% endblock %}
 </head>
 
-<body class="bg-dream-dark text-gray-300 font-roboto-mono antialiased overflow-x-hidden min-h-screen flex flex-col">
+<body class="bg-black text-gray-300 font-roboto-mono antialiased overflow-x-hidden min-h-screen flex flex-col pt-16">
     
-    <!-- ==================== MENU MOBILE (ÍCONE HAMBÚRGUER) ==================== -->
-    <div class="fixed top-4 right-4 z-50 cursor-pointer md:hidden">
-        <i class="bi bi-list text-white text-3xl bg-dream-dark rounded-full w-12 h-12 flex items-center justify-center shadow-dream hover:shadow-dream-lg transition-all duration-300 menu-mobile"></i>
-    </div>
+    <!-- ==================== HEADER FIXO COM MENU HORIZONTAL ==================== -->
+    <header class="fixed top-0 left-0 right-0 z-40 bg-black/95 backdrop-blur-sm border-b border-gray-800">
+        <div class="container mx-auto px-4">
+            <div class="flex items-center justify-between h-16">
+                
+                <!-- Logo e título -->
+                <div class="flex items-center gap-3">
+                    <img src="{{ url_for('static', filename='images/amiraldo_logo_transparent_white.png') }}" 
+                         alt="DreamWalker Logo" 
+                         class="w-8 h-8 rounded-full">
+                    <span class="font-orbitron text-white text-sm tracking-wider hidden sm:inline">DreamWalker Plane</span>
+                </div>
+                
+                <!-- Menu Desktop (horizontal) -->
+                <nav class="hidden md:flex items-center gap-1">
+                    <a href="{{ url_for('main.index') }}" class="nav-link-desktop">Início</a>
+                    <a href="{{ url_for('main.contos') }}" class="nav-link-desktop">Contos</a>
+                    <a href="{{ url_for('relatos.mural') }}" class="nav-link-desktop">Mural</a>
+                    <a href="{{ url_for('doacoes.doacoes') }}" class="nav-link-desktop">Doações</a>
+                    <a href="{{ url_for('contato.contato') }}" class="nav-link-desktop">Contato</a>
+                    <a href="{{ url_for('main.sonhar') }}" class="nav-link-desktop">O Sonhar</a>
+                    
+                    <!-- Link Admin (aparece apenas se logado) -->
+                    {% if session.admin_token %}
+                    <a href="{{ url_for('admin.dashboard') }}" class="nav-link-desktop border-l border-gray-800 ml-2 pl-4">
+                        <i class="bi bi-shield-lock mr-1"></i> Admin
+                    </a>
+                    {% endif %}
+                </nav>
+                
+                <!-- Lado direito: cubo + menu mobile -->
+                <div class="flex items-center gap-4">
+                    <!-- Cubo místico no header -->
+                    <div id="cube-header" class="relative w-6 h-6 opacity-40 hidden sm:block">
+                        <div class="cube-face top"></div>
+                        <div class="cube-face right"></div>
+                        <div class="cube-face left"></div>
+                        <div class="cube-face bottom"></div>
+                        <div class="cube-face back"></div>
+                        <div class="cube-face front"></div>
+                    </div>
+                    
+                    <!-- Ícone do Menu Mobile -->
+                    <div class="md:hidden cursor-pointer">
+                        <i class="bi bi-list text-white text-2xl menu-mobile"></i>
+                    </div>
+                </div>
+                
+            </div>
+        </div>
+    </header>
     
-    <!-- ==================== MENU LATERAL (ASIDE) ==================== -->
-    <!-- 
-        Mesmo conceito do seu código original:
-        - Inicialmente escondido (left: -400px)
-        - Quando ativo, left: 0
-        - Com transição suave
-    -->
-    <aside id="menu-responsive" class="fixed top-0 left-[-400px] w-80 md:w-96 h-full bg-dream-dark z-40 transition-all duration-500 ease-in-out overflow-y-auto shadow-2xl border-r border-dream-purple/30">
+    <!-- ==================== MENU LATERAL (APENAS MOBILE) ==================== -->
+    <aside id="menu-responsive" class="fixed top-0 left-[-320px] w-80 h-full bg-black z-50 transition-all duration-500 ease-in-out overflow-y-auto border-r border-gray-800 md:hidden">
         <div class="flex flex-col items-center py-8 px-4">
+            
+            <!-- Botão fechar no topo -->
+            <div class="absolute top-4 right-4 cursor-pointer" id="close-menu">
+                <i class="bi bi-x-lg text-white text-xl"></i>
+            </div>
             
             <!-- Logo -->
             <img src="{{ url_for('static', filename='images/amiraldo_logo_transparent_white.png') }}" 
                  alt="DreamWalker Logo" 
-                 class="w-40 h-auto rounded-full shadow-dream mb-6">
+                 class="w-24 h-auto rounded-full mb-4 opacity-90">
             
-            <!-- Título místico -->
-            <h1 class="font-orbitron text-xl text-white text-center mb-8 animate-pulse-glow">DreamWalker Plane</h1>
+            <!-- Título -->
+            <h1 class="font-orbitron text-base text-white text-center tracking-wider mb-6">DreamWalker Plane</h1>
             
-            <!-- Navegação Principal -->
-            <nav class="flex flex-col items-center gap-4 w-full">
-                <a href="{{ url_for('main.index') }}" class="btn-option-nav">Início</a>
-                <a href="{{ url_for('main.contos') }}" class="btn-option-nav">Contos</a>
-                <a href="{{ url_for('relatos.mural') }}" class="btn-option-nav">Mural de Relatos</a>
-                <a href="{{ url_for('doacoes.doacoes') }}" class="btn-option-nav">Doações</a>
-                <a href="{{ url_for('contato.contato') }}" class="btn-option-nav">Contato</a>
-                <a href="{{ url_for('main.sonhar') }}" class="btn-option-nav">O Sonhar</a>
+            <!-- Navegação Mobile -->
+            <nav class="flex flex-col items-center gap-3 w-full">
+                <a href="{{ url_for('main.index') }}" class="btn-option-nav-mobile">Início</a>
+                <a href="{{ url_for('main.contos') }}" class="btn-option-nav-mobile">Contos</a>
+                <a href="{{ url_for('relatos.mural') }}" class="btn-option-nav-mobile">Mural de Relatos</a>
+                <a href="{{ url_for('doacoes.doacoes') }}" class="btn-option-nav-mobile">Doações</a>
+                <a href="{{ url_for('contato.contato') }}" class="btn-option-nav-mobile">Contato</a>
+                <a href="{{ url_for('main.sonhar') }}" class="btn-option-nav-mobile">O Sonhar</a>
+                
+                {% if session.admin_token %}
+                <a href="{{ url_for('admin.dashboard') }}" class="btn-option-nav-mobile border-gray-600 mt-2">
+                    <i class="bi bi-shield-lock mr-2"></i> Admin
+                </a>
+                {% endif %}
             </nav>
             
-            <!-- Cubo Místico (seu efeito original) -->
-            <div class="mt-12 relative w-12 h-12 mx-auto" id="cube-container-aside">
-                <div class="face_ top"></div>
-                <div class="face_ right"></div>
-                <div class="face_ bottom"></div>
-                <div class="face_ left"></div>
-                <div class="face_ back"></div>
-                <div class="face_ front"></div>
+            <!-- Cubo no final do menu mobile -->
+            <div class="mt-10 pt-6 border-t border-gray-800 w-full flex justify-center">
+                <div id="cube-container-aside" class="relative w-8 h-8 opacity-40">
+                    <div class="face_ top"></div>
+                    <div class="face_ right"></div>
+                    <div class="face_ left"></div>
+                    <div class="face_ bottom"></div>
+                    <div class="face_ back"></div>
+                    <div class="face_ front"></div>
+                </div>
             </div>
             
-            <!-- Links Sociais (opcional) -->
-            <div class="mt-8 flex gap-6">
-                <a href="https://www.instagram.com/dreamwalker_plane/" target="_blank" class="text-dream-purple hover:text-dream-purple-light text-2xl transition">
-                    <i class="bi bi-instagram"></i>
-                </a>
-                <a href="https://www.facebook.com/profile.php?id=61570894916265" target="_blank" class="text-dream-purple hover:text-dream-purple-light text-2xl transition">
-                    <i class="bi bi-facebook"></i>
-                </a>
-            </div>
         </div>
     </aside>
+    
+    <!-- Overlay para fechar menu mobile -->
+    <div id="menu-overlay" class="fixed inset-0 bg-black/70 z-40 hidden transition-opacity duration-300 md:hidden"></div>
     
     <!-- ==================== CONTEÚDO PRINCIPAL ==================== -->
     <main class="flex-grow">
@@ -145,40 +168,33 @@
     </main>
     
     <!-- ==================== FOOTER ==================== -->
-    <footer class="bg-dream-dark text-white text-center py-4 relative border-t border-dream-purple/50 mt-auto">
+    <footer class="bg-black text-white text-center py-6 relative border-t border-gray-800 mt-auto">
         <div class="container mx-auto px-4">
-            <p class="text-sm">&copy; <span id="current-year"></span> 
-                <a href="#" class="hover:text-dream-purple transition">Amiraldo Rodrigues.</a> 
-                Todos os direitos reservados.
-            </p>
-            <ul class="flex justify-center gap-6 mt-2 text-xs">
-                <li><a href="{{ url_for('main.politica') }}" class="text-gray-400 hover:text-dream-purple transition">Política de Privacidade</a></li>
-                <li><a href="{{ url_for('main.termosuso') }}" class="text-gray-400 hover:text-dream-purple transition">Termos de Uso</a></li>
+            <p class="text-xs text-gray-500">&copy; <span id="current-year"></span> Amiraldo Rodrigues. Todos os direitos reservados.</p>
+            <ul class="flex justify-center gap-4 mt-2 text-xs">
+                <li><a href="{{ url_for('main.politica') }}" class="text-gray-600 hover:text-white transition">Política de Privacidade</a></li>
+                <li><a href="{{ url_for('main.termosuso') }}" class="text-gray-600 hover:text-white transition">Termos de Uso</a></li>
             </ul>
         </div>
     </footer>
     
-    <!-- ==================== ALERTAS (FLASH MESSAGES) ==================== -->
+    <!-- ==================== ALERTAS ==================== -->
     <div class="fixed top-20 left-1/2 transform -translate-x-1/2 z-50 w-full max-w-md px-4">
         {% with messages = get_flashed_messages(with_categories=true) %}
             {% if messages %}
                 {% for category, message in messages %}
-                    <div class="alert-dream rounded-lg px-4 py-3 mb-2 shadow-lg 
-                                {% if category == 'success' %}bg-green-600 text-white border-l-4 border-green-300
-                                {% elif category == 'danger' %}bg-red-600 text-white border-l-4 border-red-300
-                                {% elif category == 'warning' %}bg-yellow-500 text-white border-l-4 border-yellow-300
-                                {% else %}bg-dream-purple text-white border-l-4 border-white{% endif %}">
+                    <div class="bg-black border border-gray-700 px-4 py-3 mb-2">
                         <div class="flex items-center gap-2">
                             {% if category == 'success' %}
-                                <i class="bi bi-check-circle-fill"></i>
+                                <i class="bi bi-check-circle text-green-400"></i>
                             {% elif category == 'danger' %}
-                                <i class="bi bi-exclamation-triangle-fill"></i>
+                                <i class="bi bi-exclamation-triangle text-red-400"></i>
                             {% elif category == 'warning' %}
-                                <i class="bi bi-exclamation-circle-fill"></i>
+                                <i class="bi bi-exclamation-circle text-yellow-400"></i>
                             {% else %}
-                                <i class="bi bi-info-circle-fill"></i>
+                                <i class="bi bi-info-circle text-white"></i>
                             {% endif %}
-                            <span class="text-sm">{{ message }}</span>
+                            <span class="text-sm text-white">{{ message }}</span>
                         </div>
                     </div>
                 {% endfor %}
@@ -187,39 +203,57 @@
     </div>
     
     <!-- ==================== SCRIPTS ==================== -->
-    <!-- Seu JS existente (menu, animações) -->
     <script src="{{ url_for('static', filename='js/script.js') }}"></script>
     
-    <!-- Script para auto-fechar alerts -->
     <script>
-        // Fecha os alerts automaticamente após 5 segundos
+        // Fecha alerts após 5 segundos
         setTimeout(() => {
-            document.querySelectorAll('.alert-dream').forEach(alert => {
+            document.querySelectorAll('.alert-dream, .bg-black.border-gray-700').forEach(alert => {
                 alert.style.transition = 'opacity 0.5s';
                 alert.style.opacity = '0';
                 setTimeout(() => alert.remove(), 500);
             });
         }, 5000);
         
-        // Ano corrente no footer
+        // Ano corrente
         document.getElementById('current-year').textContent = new Date().getFullYear();
         
         // Menu mobile toggle
         const menuMobile = document.querySelector('.menu-mobile');
         const menuResponsive = document.getElementById('menu-responsive');
+        const menuOverlay = document.getElementById('menu-overlay');
+        const closeMenuBtn = document.getElementById('close-menu');
+        
+        function openMenu() {
+            menuResponsive.style.left = '0';
+            menuOverlay.classList.remove('hidden');
+            document.body.style.overflow = 'hidden';
+        }
+        
+        function closeMenu() {
+            menuResponsive.style.left = '-320px';
+            menuOverlay.classList.add('hidden');
+            document.body.style.overflow = 'auto';
+        }
         
         if (menuMobile) {
-            menuMobile.addEventListener('click', () => {
-                const isOpen = menuResponsive.style.left === '0px';
-                menuResponsive.style.left = isOpen ? '-400px' : '0';
-                menuMobile.classList.toggle('bi-list');
-                menuMobile.classList.toggle('bi-x');
-                document.body.style.overflow = isOpen ? 'auto' : 'hidden';
-            });
+            menuMobile.addEventListener('click', openMenu);
         }
+        
+        if (closeMenuBtn) {
+            closeMenuBtn.addEventListener('click', closeMenu);
+        }
+        
+        if (menuOverlay) {
+            menuOverlay.addEventListener('click', closeMenu);
+        }
+        
+        // Fecha menu ao clicar em um link
+        document.querySelectorAll('#menu-responsive a').forEach(link => {
+            link.addEventListener('click', closeMenu);
+        });
     </script>
     
-    <!-- Bloco para scripts adicionais específicos de cada página -->
     {% block extra_js %}{% endblock %}
 </body>
 </html>
