@@ -12,7 +12,7 @@ load_dotenv()
 
 # Importa as extensões
 from models import db
-from control.contador import inicializar_contador  # REMOVIDO: iniciar_pingador
+from control.contador import inicializar_contador, obter_contadores  
 
 # Importa os Blueprints
 from blueprints.main import main_bp
@@ -62,10 +62,11 @@ def create_app():
     app.config['HOTMART_CONTO_002'] = os.getenv('HOTMART_CONTO_002')
     
     # PayPal
-    app.config['PAYPAL_LINK'] = os.getenv('PAYPAL_LINK', 'https://paypal.me/rodriguesxes')
+    app.config['PAYPAL_LINK'] = os.getenv('PAYPAL_LINK')
     
     # Admin
-    app.config['ADMIN_PASSWORD'] = os.getenv('ADMIN_PASSWORD', 'admin123')
+    app.config['ADMIN_PASSWORD'] = os.getenv('ADMIN_PASSWORD')
+    app.config['ADMIN_USERNAME'] = os.getenv('ADMIN_USERNAME')
     
     # ========== INICIALIZA EXTENSÕES ==========
     db.init_app(app)

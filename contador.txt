@@ -1,5 +1,5 @@
 downloads: 0
-visitantes: 21
+visitantes: 46
 visitas:
 - data: '2026-03-28 19:24:02'
   ip: 127.0.0.1
@@ -82,6 +82,106 @@ visitas:
   local: Localhost
   tipo: Privado
 - data: '2026-03-29 11:54:58'
+  ip: 127.0.0.1
+  local: Localhost
+  tipo: Privado
+- data: '2026-03-29 12:05:44'
+  ip: 127.0.0.1
+  local: Localhost
+  tipo: Privado
+- data: '2026-03-29 13:55:51'
+  ip: 127.0.0.1
+  local: Localhost
+  tipo: Privado
+- data: '2026-03-29 14:03:20'
+  ip: 127.0.0.1
+  local: Localhost
+  tipo: Privado
+- data: '2026-03-29 14:04:20'
+  ip: 127.0.0.1
+  local: Localhost
+  tipo: Privado
+- data: '2026-03-29 14:04:20'
+  ip: 127.0.0.1
+  local: Localhost
+  tipo: Privado
+- data: '2026-03-29 14:07:34'
+  ip: 127.0.0.1
+  local: Localhost
+  tipo: Privado
+- data: '2026-03-29 14:08:13'
+  ip: 127.0.0.1
+  local: Localhost
+  tipo: Privado
+- data: '2026-03-29 14:27:23'
+  ip: 127.0.0.1
+  local: Localhost
+  tipo: Privado
+- data: '2026-03-29 14:27:25'
+  ip: 127.0.0.1
+  local: Localhost
+  tipo: Privado
+- data: '2026-03-29 14:27:38'
+  ip: 127.0.0.1
+  local: Localhost
+  tipo: Privado
+- data: '2026-03-29 14:53:29'
+  ip: 127.0.0.1
+  local: Localhost
+  tipo: Privado
+- data: '2026-03-29 14:53:34'
+  ip: 127.0.0.1
+  local: Localhost
+  tipo: Privado
+- data: '2026-03-29 15:46:38'
+  ip: 127.0.0.1
+  local: Localhost
+  tipo: Privado
+- data: '2026-03-29 15:50:18'
+  ip: 127.0.0.1
+  local: Localhost
+  tipo: Privado
+- data: '2026-03-29 15:50:26'
+  ip: 127.0.0.1
+  local: Localhost
+  tipo: Privado
+- data: '2026-03-29 15:55:31'
+  ip: 127.0.0.1
+  local: Localhost
+  tipo: Privado
+- data: '2026-03-29 15:55:39'
+  ip: 127.0.0.1
+  local: Localhost
+  tipo: Privado
+- data: '2026-03-29 15:55:53'
+  ip: 127.0.0.1
+  local: Localhost
+  tipo: Privado
+- data: '2026-03-29 16:00:47'
+  ip: 127.0.0.1
+  local: Localhost
+  tipo: Privado
+- data: '2026-03-29 16:03:40'
+  ip: 127.0.0.1
+  local: Localhost
+  tipo: Privado
+- data: '2026-03-29 17:28:05'
+  ip: 127.0.0.1
+  local: Localhost
+  tipo: Privado
+- data: '2026-03-29 17:55:04'
+  ip: 127.0.0.1
+  local: Localhost
+  tipo: Privado
+- data: '2026-03-29 17:59:03'
+  ip: 127.0.0.1
+  local: Localhost
+  tipo: Privado
+- data: '2026-03-29 18:07:55'
+  ip: 127.0.0.1
+  local: Localhost
+  tipo: Privado
+- data: '2026-03-29 18:29:29'
   ip: 127.0.0.1
   local: Localhost
   tipo: Privado

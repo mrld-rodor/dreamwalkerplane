@@ -1,64 +1,75 @@
-<!-- 
-    ============================================================================
-    ADMIN_LOGIN.HTML - DreamWalker Plane
-    ============================================================================
-    Página de login para administradores acessarem a área de moderação de relatos
-    ============================================================================
--->
+<!-- DreamWalker Plane Project - Admin Login -->
 
 {% extends "base.html" %}
 
-{% block title %}Admin Login - DreamWalker Plane{% endblock %}
+{% block title %}Admin Login - DreamWalker{% endblock %}
 
 {% block content %}
-<div class="bg-mystic min-h-screen flex items-center justify-center py-12">
-    
-    <div class="container mx-auto px-4 max-w-md">
-        
-        <!-- Logo -->
-        <div class="text-center mb-8">
-            <img src="{{ url_for('static', filename='images/amiraldo_logo_transparent_white.png') }}" 
-                 alt="DreamWalker Logo" 
-                 class="w-24 h-auto rounded-full shadow-dream mx-auto mb-4">
-            <h1 class="text-2xl font-orbitron text-white">Área Administrativa</h1>
-            <p class="text-gray-400 text-sm mt-2">Acesso restrito - Moderação de Relatos</p>
-        </div>
-        
-        <!-- Formulário de Login -->
-        <div class="dream-card p-8" data-anime="up">
-            <form method="POST" action="{{ url_for('relatos.admin_login') }}">
-                
-                <div class="mb-6">
-                    <label for="senha" class="block text-white font-orbitron mb-2">
-                        <i class="bi bi-lock mr-2"></i> Senha de Acesso
-                    </label>
-                    <input type="password" 
-                           id="senha" 
-                           name="senha" 
-                           required
-                           class="w-full bg-dream-gray border border-dream-purple/50 rounded-lg px-4 py-3 text-white focus:outline-none focus:border-dream-purple transition"
-                           placeholder="Digite a senha administrativa">
-                </div>
-                
-                <button type="submit" 
-                        class="w-full bg-dream-purple hover:bg-dream-purple-light text-white font-orbitron py-3 rounded-lg transition-all duration-300">
-                    <i class="bi bi-box-arrow-in-right mr-2"></i> Acessar
-                </button>
-                
-            </form>
+
+<div class="conteiner mt-5">
+    <div class="row">        
+        <div class="col-md-12">
+            <img id="logo" src="{{ url_for('static', filename='images/amiraldo_logo_transparent_white.png') }}" alt="logo">
+        </div>                   
+    </div>        
+</div>
+
+<section class="mt-5 mb-5">
+    <p id="pira">.:.</p>
+    <h2 class="text-center" style="color: #0603b4; font-family: 'Orbitron';">Área Administrativa</h2>
+    <p class="text-center text-muted">Acesso restrito - Informações sensíveis</p>
+</section>
+
+<div class="container">
+    <div class="row justify-content-center">
+        <div class="col-md-4">
             
-            <div class="mt-6 text-center">
-                <a href="{{ url_for('relatos.mural') }}" class="text-gray-500 hover:text-dream-purple text-sm transition">
-                    <i class="bi bi-arrow-left mr-1"></i> Voltar ao Mural
-                </a>
+            <!-- Alertas de erro/sucesso -->
+            {% with messages = get_flashed_messages(with_categories=true) %}
+                {% if messages %}
+                    {% for category, message in messages %}
+                        <div class="alert alert-{{ category }} alert-dismissible fade show mb-3" role="alert">
+                            <i class="bi bi-info-circle"></i> {{ message }}
+                            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                        </div>
+                    {% endfor %}
+                {% endif %}
+            {% endwith %}
+            
+            <div class="card p-4" style="background-color: rgba(0,0,0,0.7); border: 2px solid #0603b4;">
+                <form method="POST">
+                    <div class="mb-3">
+                        <label for="username" class="form-label text-white">Usuário</label>
+                        <input type="text" class="form-control" id="username" name="username" required
+                               style="background-color: #1a1a1a; border-color: #0603b4; color: #fff;">
+                    </div>
+                    <div class="mb-3">
+                        <label for="password" class="form-label text-white">Senha</label>
+                        <input type="password" class="form-control" id="password" name="password" required
+                               style="background-color: #1a1a1a; border-color: #0603b4; color: #fff;">
+                    </div>
+                    <button type="submit" class="btn w-100" style="background-color: #0603b4; color: #fff;">
+                        <i class="bi bi-box-arrow-in-right"></i> Entrar
+                    </button>
+                </form>
+            </div>
+            
+            <div class="text-center mt-3">
+                <a href="{{ url_for('main.index') }}" class="text-muted">Voltar ao site</a>
             </div>
         </div>
-        
-        <!-- Aviso -->
-        <div class="text-center mt-6 text-gray-500 text-xs">
-            <i class="bi bi-shield-lock"></i> Esta área é restrita aos administradores do site
-        </div>
-        
     </div>
 </div>
+
+<section id="cube" class="mt-5">
+    <div id='cube-container' class="mb-5 mt-5">
+        <div class="face top"></div>
+        <div class="face right"></div>
+        <div class="face bottom"></div>
+        <div class="face left"></div>
+        <div class="face back"></div>
+        <div class="face front"></div>
+    </div>
+</section>
+
 {% endblock %}

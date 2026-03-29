@@ -3,8 +3,10 @@ blueprints/main.py - Rotas principais do DreamWalker Plane
 Início, Contos, Sonhar, Políticas e Termos
 """
 
-from flask import Blueprint, render_template, request, current_app
+from flask import Blueprint, render_template, request, current_app, session, redirect, url_for, flash
 from control.contador import atualizar_contadores, obter_contadores
+from functools import wraps
+import os
 
 # Cria o Blueprint
 main_bp = Blueprint('main', __name__)
@@ -86,8 +88,73 @@ def politica():
 #     return send_from_directory('static/download', filename)
 
 
+# ==================== PROTEÇÃO DE ROTAS ADMIN ====================
+
+def login_required(f):
+    """Decorator para proteger rotas admin"""
+    @wraps(f)
+    def decorated_function(*args, **kwargs):
+        if not session.get('admin_logged'):
+            flash('Acesso negado! Faça login primeiro.', 'danger')
+            return redirect(url_for('main.admin_login'))
+        return f(*args, **kwargs)
+    return decorated_function
+
+
+# Rota de login do admin
+@main_bp.route('/admin-login', methods=['GET', 'POST'])
+def admin_login():
+    """Login administrativo"""
+    # Se já estiver logado, redireciona para status
+    if session.get('admin_logged'):
+        return redirect(url_for('main.status'))
+    
+    if request.method == 'POST':
+        username = request.form.get('username', '').strip()
+        password = request.form.get('password', '').strip()
+        
+        admin_user = os.getenv('ADMIN_USERNAME')
+        admin_pass = os.getenv('ADMIN_PASSWORD')
+        
+        if username == admin_user and password == admin_pass:
+            session['admin_logged'] = True
+            flash('Login realizado com sucesso!', 'success')
+            return redirect(url_for('main.status'))
+        else:
+            flash('Usuário ou senha inválidos!', 'danger')
+    
+    return render_template('admin_login.html')
+
+
+# Rota de logout
+@main_bp.route('/admin-logout')
+def admin_logout():
+    """Logout administrativo"""
+    session.pop('admin_logged', None)
+    flash('Logout realizado!', 'info')
+    return redirect(url_for('main.index'))
+
+
+# Rota do status (protegida)
 @main_bp.route('/status')
+@login_required
 def status():
-    """Página de status (admin)"""
+    """Página de status com estatísticas"""
     visitantes, downloads, visitas = obter_contadores()
     return render_template('status.html', visitantes=visitantes, downloads=downloads, visitas=visitas)
+
+
+@main_bp.route('/admin-dashboard')
+@login_required
+def admin_dashboard():
+    """Dashboard administrativo com estatísticas"""
+    visitantes, downloads, visitas = obter_contadores()
+    return render_template('admin_dashboard.html', 
+                          visitantes=visitantes, 
+                          downloads=downloads, 
+                          visitas=visitas)
+
+
+
+
+
