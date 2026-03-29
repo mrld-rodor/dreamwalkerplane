@@ -1,0 +1,42 @@
+{% extends "base.html" %}
+
+{% block title %}Dashboard - Admin{% endblock %}
+
+{% block content %}
+<div class="bg-black min-h-screen py-12">
+    <div class="container mx-auto px-4 max-w-6xl">
+        
+        <div class="flex justify-between items-center mb-8 flex-wrap gap-4">
+            <h1 class="text-2xl md:text-3xl font-orbitron text-white"><i class="bi bi-speedometer2 mr-2"></i> <span data-lang="dashboard">Dashboard</span></h1>
+            <div class="flex gap-3">
+                <a href="{{ url_for('admin.listar_relatos') }}" class="bg-gray-800 hover:bg-gray-700 text-white px-4 py-2 transition"><i class="bi bi-list-ul mr-2"></i> <span data-lang="gerenciar_relatos">Gerenciar Relatos</span></a>
+                <a href="{{ url_for('admin.logout') }}" class="bg-red-600/80 hover:bg-red-600 text-white px-4 py-2 transition"><i class="bi bi-box-arrow-right mr-2"></i> <span data-lang="sair">Sair</span></a>
+            </div>
+        </div>
+        
+        <div class="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
+            <div class="border border-gray-800 p-6 text-center"><i class="bi bi-chat-dots text-3xl text-white mb-2"></i><p class="text-gray-400" data-lang="total_relatos">Total Relatos</p><p class="text-3xl font-orbitron text-white">{{ total_relatos }}</p></div>
+            <div class="border border-gray-800 p-6 text-center"><i class="bi bi-clock-history text-3xl text-yellow-400 mb-2"></i><p class="text-gray-400" data-lang="pendentes">Pendentes</p><p class="text-3xl font-orbitron text-yellow-400">{{ pendentes }}</p></div>
+            <div class="border border-gray-800 p-6 text-center"><i class="bi bi-check-circle text-3xl text-green-400 mb-2"></i><p class="text-gray-400" data-lang="aprovados">Aprovados</p><p class="text-3xl font-orbitron text-green-400">{{ aprovados }}</p></div>
+            <div class="border border-gray-800 p-6 text-center"><i class="bi bi-x-circle text-3xl text-red-400 mb-2"></i><p class="text-gray-400" data-lang="rejeitados">Rejeitados</p><p class="text-3xl font-orbitron text-red-400">{{ rejeitados }}</p></div>
+        </div>
+        
+        <div class="border border-gray-800 p-6">
+            <h2 class="text-xl font-orbitron text-white mb-4" data-lang="ultimos_relatos">Últimos Relatos</h2>
+            <div class="overflow-x-auto">
+                <table class="w-full text-sm">
+                    <thead class="border-b border-gray-700"><tr class="text-left text-gray-400"><th class="pb-2" data-lang="data">Data</th><th class="pb-2" data-lang="label_autor">Autor</th><th class="pb-2" data-lang="label_titulo">Título</th><th class="pb-2" data-lang="status">Status</th><th class="pb-2">Ações</th></tr></thead>
+                    <tbody>
+                        {% for relato in ultimos_relatos %}
+                        <tr class="border-b border-gray-800"><td class="py-2 text-gray-400">{{ relato.data_envio.strftime('%d/%m/%Y %H:%M') }}</td><td class="py-2">{{ relato.autor }}</td><td class="py-2">{{ relato.titulo }}</td>
+                        <td class="py-2">{% if relato.status == 'pendente' %}<span class="text-yellow-400" data-lang="status_pendente">Pendente</span>{% elif relato.status == 'aprovado' %}<span class="text-green-400" data-lang="status_aprovado">Aprovado</span>{% else %}<span class="text-red-400" data-lang="status_rejeitado">Rejeitado</span>{% endif %}</td>
+                        <td class="py-2"><a href="{{ url_for('admin.ver_relato', relato_id=relato.id) }}" class="text-gray-400 hover:text-white"><i class="bi bi-eye"></i></a></td></tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+        
+    </div>
+</div>
+{% endblock %}

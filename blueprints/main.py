@@ -77,13 +77,13 @@ def politica():
     return render_template('p_privacy.html')
 
 
-@main_bp.route('/download/<filename>')
-def download_file(filename):
-    """Download dos contos (atualiza contador)"""
-    ip = request.headers.get('X-Forwarded-For', request.remote_addr)
-    from control.contador import atualizar_contadores
-    atualizar_contadores(downloads=1, ip=ip)
-    return send_from_directory('static/download', filename)
+# @main_bp.route('/download/<filename>')
+# def download_file(filename):
+#     """Download dos contos (atualiza contador)"""
+#     ip = request.headers.get('X-Forwarded-For', request.remote_addr)
+#     from control.contador import atualizar_contadores
+#     atualizar_contadores(downloads=1, ip=ip)
+#     return send_from_directory('static/download', filename)
 
 
 @main_bp.route('/status')

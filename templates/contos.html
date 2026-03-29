@@ -2,7 +2,7 @@
     ============================================================================
     CONTOS.HTML - DreamWalker Plane
     ============================================================================
-    Lista todos os contos disponíveis com opções de download e compra
+    Lista todos os contos disponíveis com opção de compra na Hotmart
     ============================================================================
 -->
 
@@ -60,12 +60,8 @@
                     {{ conto.descricao }}
                 </p>
                 
-                <!-- Botões de ação -->
+                <!-- Botão de compra (APENAS) -->
                 <div class="flex flex-col sm:flex-row gap-3 mt-4">
-                    <a href="{{ url_for('main.download_file', filename=conto.arquivo) }}" 
-                       class="flex-1 text-center bg-transparent border border-dream-purple text-dream-purple hover:bg-dream-purple hover:text-white py-2 rounded-lg transition-all duration-300">
-                        <i class="bi bi-download mr-2"></i> Download Grátis
-                    </a>
                     <a href="{{ conto.hotmart_link }}" 
                        target="_blank"
                        class="flex-1 text-center bg-dream-purple hover:bg-dream-purple-light text-white py-2 rounded-lg transition-all duration-300">

@@ -12,7 +12,7 @@ def doacoes():
     """
     Página de doações e apoio
     """
-    paypal_link = current_app.config.get('PAYPAL_LINK', 'https://paypal.me/rodriguesxes')
+    paypal_link = current_app.config.get('PAYPAL_LINK', '#')
     
     # Links dos contos na Hotmart
     hotmart_links = {
