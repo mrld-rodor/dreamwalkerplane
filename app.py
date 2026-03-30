@@ -40,9 +40,16 @@ def create_app():
     app.config['SQLALCHEMY_DATABASE_URI'] = database_url
     app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
     app.config['SQLALCHEMY_ENGINE_OPTIONS'] = {
-        'pool_size': 10,
+        'pool_size': 5,
+        'max_overflow': 10,
         'pool_recycle': 3600,
         'pool_pre_ping': True,
+        'connect_args': {
+            'connect_timeout': 30,
+            'read_timeout': 60,
+            'write_timeout': 60,
+            'autocommit': True,
+        }
     }
     
     # Email
