@@ -79,17 +79,15 @@ def create_app():
     db.init_app(app)
     
     # ========== CRIA TABELAS SE NÃO EXISTIREM (lazy - na primeira requisição) ==========
-    db_initialized = False
+    app.db_initialized = False
     
     @app.before_request
     def initialize_db_on_first_request():
-        global db_initialized
-        if not db_initialized:
+        if not app.db_initialized:
             try:
-                with app.app_context():
-                    db.create_all()
-                    print("[INFO] Banco de dados verificado/criado com sucesso!")
-                db_initialized = True
+                db.create_all()
+                print("[INFO] Banco de dados verificado/criado com sucesso!")
+                app.db_initialized = True
             except Exception as e:
                 print(f"[WARN] Banco de dados não disponível: {e}")
                 # Continua mesmo assim - a aplicação pode funcionar com algumas features limitadas
