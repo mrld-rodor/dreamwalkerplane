@@ -78,13 +78,28 @@ def create_app():
     # ========== INICIALIZA EXTENSÕES ==========
     db.init_app(app)
     
-    # ========== CRIA TABELAS SE NÃO EXISTIREM ==========
-    with app.app_context():
-        db.create_all()
-        print("[INFO] Banco de dados verificado/criado com sucesso!")
+    # ========== CRIA TABELAS SE NÃO EXISTIREM (lazy - na primeira requisição) ==========
+    db_initialized = False
+    
+    @app.before_request
+    def initialize_db_on_first_request():
+        global db_initialized
+        if not db_initialized:
+            try:
+                with app.app_context():
+                    db.create_all()
+                    print("[INFO] Banco de dados verificado/criado com sucesso!")
+                db_initialized = True
+            except Exception as e:
+                print(f"[WARN] Banco de dados não disponível: {e}")
+                # Continua mesmo assim - a aplicação pode funcionar com algumas features limitadas
     
     # ========== INICIALIZA O CONTADOR ==========
-    inicializar_contador()
+    try:
+        inicializar_contador()
+    except Exception as e:
+        print(f"[WARN] Contador não pode ser inicializado: {e}")
+        print("[INFO] Tentarei novamente na primeira requisição")
     
     # ========== REGISTRA OS BLUEPRINTS ==========
     app.register_blueprint(main_bp)
@@ -100,5 +115,6 @@ app = create_app()
 
 
 if __name__ == '__main__':
-    # Em desenvolvimento
-    app.run(host='0.0.0.0', port=5000, debug=True)
+    # Em desenvolvimento: PORT vem do .env ou padrão 5000
+    port = int(os.getenv('PORT', 5000))
+    app.run(host='0.0.0.0', port=port, debug=True)
