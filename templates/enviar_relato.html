@@ -18,7 +18,7 @@
         
         <!-- Logo -->
         <div class="flex justify-center mb-8">
-            <img src="{{ url_for('static', filename='images/amiraldo_logo_transparent_white.png') }}" 
+            <img id="logo" src="{{ url_for('static', filename='images/amiraldo_logo_transparent_white.png') }}" 
                  alt="DreamWalker Logo" 
                  class="w-32 h-auto rounded-full shadow-dream">
         </div>
@@ -83,22 +83,27 @@
                     </p>
                 </div>
                 
+                <!-- reCAPTCHA -->
+                <div class="mb-6">
+                    <div class="g-recaptcha" data-sitekey="{{ config.get('RECAPTCHA_SITE_KEY', '') }}" style="transform: scale(0.95); transform-origin: 0 0;"></div>
+                </div>
+                
                 <!-- Botões -->
                 <div class="flex flex-col sm:flex-row gap-4 mt-8">
                     <button type="submit" 
                             id="btn-send"
-                            class="flex-1 bg-dream-purple hover:bg-dream-purple-light text-white font-orbitron py-3 rounded-lg transition-all duration-300">
+                            class="flex-1 btn-comprar">
                         <i class="bi bi-send mr-2"></i> Enviar Relato
                     </button>
                     <button type="button" 
                             id="btn-send-loader"
-                            class="flex-1 bg-dream-purple text-white font-orbitron py-3 rounded-lg hidden"
+                            class="flex-1 btn-comprar hidden"
                             disabled>
                         <span class="spinner-border spinner-border-sm mr-2" role="status"></span>
                         Enviando...
                     </button>
                     <a href="{{ url_for('relatos.mural') }}" 
-                       class="flex-1 text-center bg-transparent border border-dream-purple text-dream-purple hover:bg-dream-purple/10 font-orbitron py-3 rounded-lg transition-all duration-300">
+                       class="flex-1 text-center btn-comprar">
                         <i class="bi bi-arrow-left mr-2"></i> Voltar ao Mural
                     </a>
                 </div>
@@ -116,6 +121,9 @@
 {% endblock %}
 
 {% block extra_js %}
+<!-- Script do reCAPTCHA -->
+<script src="https://www.google.com/recaptcha/api.js" async defer></script>
+
 <script>
     // Contador de caracteres (opcional)
     const textarea = document.getElementById('conteudo');

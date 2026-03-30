@@ -223,7 +223,8 @@ i.menu-mobile{
 #logo{  
     margin-top: 50px;  
     width: 200px;
-    box-shadow: 0 0 40px rgb(6, 3, 180);
+    box-shadow: 0 0 40px rgb(6, 3, 180),
+                0 0 80px rgb(6, 3, 180);
     border-radius: 50%;
 }
 
@@ -243,7 +244,7 @@ p{
 }
 
 
-h2{
+h2#fragmentos-oniricos{
     color: red;
     font-family: 'Orbitron';
     text-align: center;

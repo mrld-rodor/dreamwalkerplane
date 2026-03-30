@@ -1,0 +1,137 @@
+<!-- 
+    ============================================================================
+    POST.HTML - DreamWalker Plane
+    ============================================================================
+    Página individual de um relato com sistema de comentários
+    ============================================================================
+-->
+
+{% extends "base.html" %}
+
+{% block title %}{{ post.titulo }} - DreamWalker Plane{% endblock %}
+
+{% block extra_css %}
+<style>
+    .post-content {
+        font-size: 1.1rem;
+        line-height: 1.8;
+    }
+    .post-content p {
+        margin-bottom: 1.5rem;
+    }
+    .comment-form textarea,
+    .comment-form input {
+        background-color: #1a1a1a;
+        border: 1px solid #0603b4;
+        color: white;
+    }
+    .comment-form textarea:focus,
+    .comment-form input:focus {
+        border-color: #3a36ff;
+        outline: none;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="bg-mystic min-h-screen py-12">
+    
+    <div class="container mx-auto px-4 max-w-4xl">
+        
+        <!-- Navegação -->
+        <div class="mb-6">
+            <a href="{{ url_for('mural') }}" class="text-dream-purple hover:text-dream-purple-light transition">
+                <i class="bi bi-arrow-left"></i> Voltar para o Mural
+            </a>
+        </div>
+        
+        <!-- Post -->
+        <div class="dream-card p-8 mb-8">
+            
+            <div class="mb-6">
+                <div class="flex items-center gap-3 mb-4 text-sm flex-wrap">
+                    <span class="text-dream-purple">
+                        <i class="bi bi-person-circle"></i> {{ post.autor }}
+                    </span>
+                    <span class="text-gray-500">
+                        <i class="bi bi-calendar3"></i> {{ post.data_envio }}
+                    </span>
+                    <span class="text-gray-500">
+                        <i class="bi bi-eye"></i> {{ post.visualizacoes }} visualizações
+                    </span>
+                </div>
+                <h1 class="text-3xl md:text-4xl font-orbitron text-white glow-text">{{ post.titulo }}</h1>
+            </div>
+            
+            <div class="post-content text-gray-300 leading-relaxed">
+                {{ post.conteudo|safe }}
+            </div>
+            
+        </div>
+        
+        <!-- Seção de Comentários -->
+        <div class="dream-card p-8">
+            <h3 class="text-2xl font-orbitron text-white mb-6">
+                <i class="bi bi-chat-dots mr-2"></i> Comentários
+                <span class="text-sm text-gray-500">({{ comentarios_aprovados|length }})</span>
+            </h3>
+            
+            {% if comentarios_aprovados %}
+            <div class="space-y-4 mb-8">
+                {% for comentario in comentarios_aprovados %}
+                <div class="comment-item">
+                    <div class="flex justify-between items-start mb-2">
+                        <div>
+                            <span class="font-orbitron text-dream-purple">{{ comentario.autor }}</span>
+                            <span class="text-gray-500 text-xs ml-2">
+                                <i class="bi bi-calendar3"></i> {{ comentario.data_envio }}
+                            </span>
+                        </div>
+                    </div>
+                    <p class="text-gray-300">{{ comentario.conteudo }}</p>
+                </div>
+                {% endfor %}
+            </div>
+            {% else %}
+            <p class="text-gray-500 text-center py-4">Seja o primeiro a comentar!</p>
+            {% endif %}
+            
+            <!-- Formulário de comentário -->
+            <div class="mt-6 pt-6 border-t border-dream-purple/30">
+                <h4 class="text-xl font-orbitron text-white mb-4">Deixe seu comentário</h4>
+                
+                <form method="POST" action="{{ url_for('comentar', post_id=post.id) }}" class="comment-form">
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+                        <input type="text" name="autor" placeholder="Seu nome" required
+                               class="bg-gray-800 border border-gray-700 rounded-lg px-4 py-2 text-white focus:outline-none focus:border-dream-purple">
+                        <input type="email" name="email" placeholder="Seu email (opcional)"
+                               class="bg-gray-800 border border-gray-700 rounded-lg px-4 py-2 text-white focus:outline-none focus:border-dream-purple">
+                    </div>
+                    <textarea name="conteudo" rows="4" placeholder="Escreva seu comentário..." required
+                              class="w-full bg-gray-800 border border-gray-700 rounded-lg px-4 py-2 text-white focus:outline-none focus:border-dream-purple mb-4"></textarea>
+                    <button type="submit" class="bg-dream-purple hover:bg-dream-purple-light text-white px-6 py-2 rounded-lg transition">
+                        <i class="bi bi-send mr-2"></i> Enviar comentário
+                    </button>
+                </form>
+                <p class="text-gray-500 text-xs mt-3">
+                    <i class="bi bi-info-circle"></i> Comentários passam por moderação antes de aparecerem
+                </p>
+            </div>
+            
+        </div>
+        
+        <!-- Cubo místico -->
+        <div class="flex justify-center mt-12">
+            <div id='cube-container' class="w-12 h-12 md:w-16 md:h-16">
+                <div class="face top"></div>
+                <div class="face right"></div>
+                <div class="face bottom"></div>
+                <div class="face left"></div>
+                <div class="face back"></div>
+                <div class="face front"></div>
+            </div>
+        </div>
+        
+    </div>
+</div>
+{% endblock %}

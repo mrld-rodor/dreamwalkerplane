@@ -18,17 +18,31 @@
         
         <!-- Logo -->
         <div class="flex justify-center mt-8">
-            <img src="{{ url_for('static', filename='images/amiraldo_logo_transparent_white.png') }}" 
+            <img id="logo" src="{{ url_for('static', filename='images/amiraldo_logo_transparent_white.png') }}" 
                  alt="DreamWalker Logo" 
                  class="w-40 md:w-48 h-auto rounded-full shadow-dream">
         </div>
         
         <!-- Status -->
-        <div class="dream-card p-8 mt-8 text-center" data-anime="down">
-            <a href="{{ url_for('main.admin_logout') }}" class="btn btn-danger" onclick="return confirm('Deseja realmente sair?')">
-                <i class="bi bi-box-arrow-right"></i> Logout
-            </a>
-            <h1 class="text-2xl md:text-3xl font-orbitron text-white glow-text mb-6">Status do Portal</h1>
+        <div class="dream-card p-8 mt-8" data-anime="down">
+            
+            <!-- Navegação Admin -->
+            <div class="flex flex-wrap justify-center gap-3 mb-6">
+                <a href="{{ url_for('main.admin_dashboard') }}" class="btn-comprar">
+                    <i class="bi bi-speedometer2 mr-2"></i> Dashboard
+                </a>
+                <a href="{{ url_for('relatos.admin_pendentes') }}" class="btn-comprar">
+                    <i class="bi bi-chat-dots mr-2"></i> Relatos
+                </a>
+                <a href="{{ url_for('main.status') }}" class="btn-comprar">
+                    <i class="bi bi-bar-chart mr-2"></i> Status
+                </a>
+                <a href="{{ url_for('main.admin_logout') }}" class="btn-comprar" onclick="return confirm('Deseja realmente sair?')">
+                    <i class="bi bi-box-arrow-right mr-2"></i> Logout
+                </a>
+            </div>
+            
+            <h1 class="text-2xl md:text-3xl font-orbitron text-white glow-text mb-6 text-center">Status do Portal</h1>
             
             <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
                 <div class="bg-dream-purple/20 rounded-lg p-4">

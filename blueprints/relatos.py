@@ -7,6 +7,7 @@ from flask import Blueprint, render_template, request, redirect, url_for, flash,
 from models import db, Relato
 from datetime import datetime
 import bleach
+import requests
 
 # Cria o Blueprint com prefixo /relatos
 relatos_bp = Blueprint('relatos', __name__, url_prefix='/relatos')
@@ -60,20 +61,43 @@ def enviar_relato():
         elif len(conteudo) > 5000:
             erros.append('Relato muito longo (máximo 5000 caracteres)')
         
-        # 3. Sanitização do conteúdo (remove XSS)
+        # 3. Valida reCAPTCHA
+        recaptcha_response = request.form.get('g-recaptcha-response')
+        secret_key = current_app.config.get('RECAPTCHA_SECRET_KEY')
+        
+        if secret_key and recaptcha_response:
+            verify_url = 'https://www.google.com/recaptcha/api/siteverify'
+            payload = {
+                'secret': secret_key,
+                'response': recaptcha_response,
+                'remoteip': request.remote_addr
+            }
+            
+            try:
+                r = requests.post(verify_url, data=payload, timeout=10)
+                result = r.json()
+                if not result.get('success'):
+                    erros.append('Verificação reCAPTCHA falhou. Tente novamente.')
+            except:
+                erros.append('Erro na verificação de segurança.')
+        elif secret_key and not recaptcha_response:
+            erros.append('Por favor, complete a verificação reCAPTCHA.')
+        
+        # 4. Sanitização do conteúdo (remove XSS)
         allowed_tags = ['p', 'br', 'strong', 'em', 'u', 'blockquote']
         conteudo_sanitizado = bleach.clean(conteudo, tags=allowed_tags, strip=True)
         
-        # 4. Se houver erros, volta com as mensagens
+        # 5. Se houver erros, volta com as mensagens
         if erros:
             for erro in erros:
                 flash(erro, 'danger')
             return render_template('enviar_relato.html', 
                                   autor=autor, 
                                   titulo=titulo, 
-                                  conteudo=conteudo)
+                                  conteudo=conteudo,
+                                  config=current_app.config)
         
-        # 5. Salva no banco de dados
+        # 6. Salva no banco de dados
         ip = request.headers.get('X-Forwarded-For', request.remote_addr)
         
         novo_relato = Relato(
@@ -98,10 +122,11 @@ def enviar_relato():
             return render_template('enviar_relato.html', 
                                   autor=autor, 
                                   titulo=titulo, 
-                                  conteudo=conteudo)
+                                  conteudo=conteudo,
+                                  config=current_app.config)
     
     # GET: exibe formulário vazio
-    return render_template('enviar_relato.html')
+    return render_template('enviar_relato.html', config=current_app.config)
 
 
 # ============================================================

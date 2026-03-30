@@ -65,45 +65,48 @@
             <div class="flex items-center justify-between h-16">
                 
                 <!-- Logo e título -->
-                <div class="flex items-center gap-3">
-                    <img src="{{ url_for('static', filename='images/amiraldo_logo_transparent_white.png') }}" 
+                <div class="flex items-center gap-3" >
+                    <img id="logo" src="{{ url_for('static', filename='images/amiraldo_logo_transparent_white.png') }}" 
                          alt="DreamWalker Logo" 
                          class="w-8 h-8 rounded-full">
                     <span class="font-orbitron text-white text-sm tracking-wider hidden sm:inline">DreamWalker Plane</span>
                 </div>
                 
-                <!-- Menu Desktop (horizontal) -->
-                <nav class="hidden md:flex items-center gap-1">
-                    <a href="{{ url_for('main.index') }}" class="nav-link-desktop">Início</a>
-                    <a href="{{ url_for('main.contos') }}" class="nav-link-desktop">Contos</a>
-                    <a href="{{ url_for('relatos.mural') }}" class="nav-link-desktop">Mural</a>
-                    <a href="{{ url_for('doacoes.doacoes') }}" class="nav-link-desktop">Doações</a>
-                    <a href="{{ url_for('contato.contato') }}" class="nav-link-desktop">Contato</a>
-                    <a href="{{ url_for('main.sonhar') }}" class="nav-link-desktop">O Sonhar</a>
+                <!-- Menu Desktop + Cubo + Menu Mobile (tudo alinhado à direita) -->
+                <div class="flex items-center gap-6">
+                    <!-- Menu Desktop (horizontal) -->
+                    <nav class="hidden md:flex items-center gap-1">
+                        <a href="{{ url_for('main.index') }}" class="nav-link-desktop">Início</a>
+                        <a href="{{ url_for('main.contos') }}" class="nav-link-desktop">Contos</a>
+                        <a href="{{ url_for('relatos.mural') }}" class="nav-link-desktop">Mural</a>
+                        <a href="{{ url_for('doacoes.doacoes') }}" class="nav-link-desktop">Doações</a>
+                        <a href="{{ url_for('contato.contato') }}" class="nav-link-desktop">Contato</a>
+                        <a href="{{ url_for('main.sonhar') }}" class="nav-link-desktop">O Sonhar</a>
+                        
+                        <!-- Link Admin (aparece apenas se logado) -->
+                        {% if session.admin_token %}
+                        <a href="{{ url_for('admin.dashboard') }}" class="nav-link-desktop border-l border-gray-800 ml-2 pl-4">
+                            <i class="bi bi-shield-lock mr-1"></i> Admin
+                        </a>
+                        {% endif %}
+                    </nav>
                     
-                    <!-- Link Admin (aparece apenas se logado) -->
-                    {% if session.admin_token %}
-                    <a href="{{ url_for('admin.dashboard') }}" class="nav-link-desktop border-l border-gray-800 ml-2 pl-4">
-                        <i class="bi bi-shield-lock mr-1"></i> Admin
-                    </a>
-                    {% endif %}
-                </nav>
-                
-                <!-- Lado direito: cubo + menu mobile -->
-                <div class="flex items-center gap-4">
-                    <!-- Cubo místico no header -->
-                    <div id="cube-header" class="relative w-6 h-6 opacity-40 hidden sm:block">
-                        <div class="cube-face top"></div>
-                        <div class="cube-face right"></div>
-                        <div class="cube-face left"></div>
-                        <div class="cube-face bottom"></div>
-                        <div class="cube-face back"></div>
-                        <div class="cube-face front"></div>
-                    </div>
-                    
-                    <!-- Ícone do Menu Mobile -->
-                    <div class="md:hidden cursor-pointer">
-                        <i class="bi bi-list text-white text-2xl menu-mobile"></i>
+                    <!-- Cubo + Menu Mobile -->
+                    <div class="flex items-center gap-4">
+                        <!-- Cubo místico no header -->
+                        <div id="cube-header" class="relative w-6 h-6 opacity-40 hidden sm:block">
+                            <div class="cube-face top"></div>
+                            <div class="cube-face right"></div>
+                            <div class="cube-face left"></div>
+                            <div class="cube-face bottom"></div>
+                            <div class="cube-face back"></div>
+                            <div class="cube-face front"></div>
+                        </div>
+                        
+                        <!-- Ícone do Menu Mobile -->
+                        <div class="md:hidden cursor-pointer">
+                            <i class="bi bi-list text-white text-2xl menu-mobile"></i>
+                        </div>
                     </div>
                 </div>
                 
@@ -121,7 +124,7 @@
             </div>
             
             <!-- Logo -->
-            <img src="{{ url_for('static', filename='images/amiraldo_logo_transparent_white.png') }}" 
+            <img id="logo" src="{{ url_for('static', filename='images/amiraldo_logo_transparent_white.png') }}" 
                  alt="DreamWalker Logo" 
                  class="w-24 h-auto rounded-full mb-4 opacity-90">
             
@@ -146,13 +149,13 @@
             
             <!-- Cubo no final do menu mobile -->
             <div class="mt-10 pt-6 border-t border-gray-800 w-full flex justify-center">
-                <div id="cube-container-aside" class="relative w-8 h-8 opacity-40">
-                    <div class="face_ top"></div>
-                    <div class="face_ right"></div>
-                    <div class="face_ left"></div>
-                    <div class="face_ bottom"></div>
-                    <div class="face_ back"></div>
-                    <div class="face_ front"></div>
+                <div id="cube-container" class="relative w-12 h-12 md:w-16 md:h-16">
+                    <div class="face top"></div>
+                    <div class="face right"></div>
+                    <div class="face left"></div>
+                    <div class="face bottom"></div>
+                    <div class="face back"></div>
+                    <div class="face front"></div>
                 </div>
             </div>
             

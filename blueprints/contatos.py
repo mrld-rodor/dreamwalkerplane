@@ -69,7 +69,7 @@ def contato():
         if erros:
             for erro in erros:
                 flash(erro, 'danger')
-            return render_template('contato.html', nome=nome, email=email, mensagem=mensagem)
+            return render_template('contato.html', nome=nome, email=email, mensagem=mensagem, config=current_app.config)
         
         # 5. Envia email usando sua função existente
         try:
@@ -81,7 +81,7 @@ def contato():
         except Exception as e:
             current_app.logger.error(f'Erro ao enviar email: {str(e)}')
             flash('Erro ao enviar mensagem. Tente novamente mais tarde.', 'danger')
-            return render_template('contato.html', nome=nome, email=email, mensagem=mensagem)
+            return render_template('contato.html', nome=nome, email=email, mensagem=mensagem, config=current_app.config)
     
     # GET: exibe formulário
-    return render_template('contato.html')
+    return render_template('contato.html', config=current_app.config)

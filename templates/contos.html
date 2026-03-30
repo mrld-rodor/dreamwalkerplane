@@ -17,7 +17,7 @@
         
         <!-- Logo -->
         <div class="flex justify-center mt-8">
-            <img src="{{ url_for('static', filename='images/amiraldo_logo_transparent_white.png') }}" 
+            <img id="logo" src="{{ url_for('static', filename='images/amiraldo_logo_transparent_white.png') }}" 
                  alt="DreamWalker Logo" 
                  class="w-40 md:w-48 h-auto rounded-full shadow-dream">
         </div>
@@ -35,7 +35,7 @@
         </div>
         
         <!-- Título dos fragmentos -->
-        <h2 class="text-2xl md:text-3xl font-orbitron text-center text-white mt-12 mb-8 glow-text">
+        <h2 class="text-red-500 text-xl md:text-4xl font-orbitron mt-8 animate-pulse text-center" data-anime="up" style="margin-bottom: 2rem;">
             Fragmentos Oníricos
         </h2>
         
@@ -61,11 +61,11 @@
                 </p>
                 
                 <!-- Botão de compra (APENAS) -->
-                <div class="flex flex-col sm:flex-row gap-3 mt-4">
+                <div class="flex flex-col sm:flex-row gap-3 mt-4 justify-center">
                     <a href="{{ conto.hotmart_link }}" 
                        target="_blank"
-                       class="flex-1 text-center bg-dream-purple hover:bg-dream-purple-light text-white py-2 rounded-lg transition-all duration-300">
-                        <i class="bi bi-cart3 mr-2"></i> Comprar na Hotmart
+                       class="btn-comprar">
+                        <i class="bi bi-cart3 mr-2"></i> Comprar 
                     </a>
                 </div>
             </div>

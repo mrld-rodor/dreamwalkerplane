@@ -1,20 +1,20 @@
 """
-models.py - Modelos SQLAlchemy para DreamWalker Plane
-Mantém compatibilidade com o banco MariaDB existente
+models.py - DreamWalker Plane
+Modelos SQLAlchemy para o banco de dados
 """
 
 from flask_sqlalchemy import SQLAlchemy
 from datetime import datetime
 import bleach
 
-# Instância do SQLAlchemy (será inicializada no app.py)
+# Instância do SQLAlchemy
 db = SQLAlchemy()
 
 
 class Relato(db.Model):
     """
-    Modelo para os relatos dos usuários
-    Tabela: relatos (vamos criar)
+    Modelo para os relatos dos usuários (posts do blog)
+    Tabela: relatos
     """
     __tablename__ = 'relatos'
     
@@ -25,35 +25,57 @@ class Relato(db.Model):
     status = db.Column(db.String(20), default='pendente')  # pendente, aprovado, rejeitado
     data_envio = db.Column(db.DateTime, default=datetime.utcnow)
     data_aprovacao = db.Column(db.DateTime, nullable=True)
-    ip_remetente = db.Column(db.String(45), nullable=True)  # IPv4 ou IPv6
+    ip_remetente = db.Column(db.String(45), nullable=True)
+    visualizacoes = db.Column(db.Integer, default=0)  # Contador de visualizações
+    
+    # Relacionamento com comentários
+    comentarios = db.relationship('Comentario', backref='relato', lazy=True, cascade='all, delete-orphan')
     
     def __repr__(self):
         return f'<Relato {self.titulo} - {self.status}>'
     
     def sanitizar_conteudo(self):
-        """
-        Sanitiza o conteúdo para evitar XSS
-        Remove tags HTML perigosas, mantém apenas básicas
-        """
+        """Sanitiza o conteúdo para evitar XSS"""
         allowed_tags = ['p', 'br', 'strong', 'em', 'u', 'h1', 'h2', 'h3', 'blockquote']
         self.conteudo = bleach.clean(self.conteudo, tags=allowed_tags, strip=True)
         return self.conteudo
     
     def to_dict(self):
-        """Converte o relato para dicionário (útil para API)"""
+        """Converte o relato para dicionário"""
         return {
             'id': self.id,
             'autor': self.autor,
             'titulo': self.titulo,
             'conteudo': self.conteudo,
             'data_envio': self.data_envio.strftime('%d/%m/%Y %H:%M') if self.data_envio else None,
+            'visualizacoes': self.visualizacoes
         }
+
+
+class Comentario(db.Model):
+    """
+    Modelo para comentários dos posts
+    Tabela: comentarios
+    """
+    __tablename__ = 'comentarios'
+    
+    id = db.Column(db.Integer, primary_key=True)
+    relato_id = db.Column(db.Integer, db.ForeignKey('relatos.id'), nullable=False)
+    autor = db.Column(db.String(100), nullable=False)
+    email = db.Column(db.String(100), nullable=True)
+    conteudo = db.Column(db.Text, nullable=False)
+    status = db.Column(db.String(20), default='pendente')  # pendente, aprovado, rejeitado
+    data_envio = db.Column(db.DateTime, default=datetime.utcnow)
+    ip_remetente = db.Column(db.String(45), nullable=True)
+    
+    def __repr__(self):
+        return f'<Comentario de {self.autor} no post {self.relato_id}>'
 
 
 class MensagemContato(db.Model):
     """
     Modelo para armazenar mensagens de contato (opcional)
-    Tabela: mensagens_contato (vamos criar)
+    Tabela: mensagens_contato
     """
     __tablename__ = 'mensagens_contato'
     

@@ -22,6 +22,13 @@
     .grecaptcha-badge {
         visibility: hidden !important;
     }
+    
+    /* Botão enviar mensagem com width compacto */
+    #btn-send,
+    #btn-send-loader {
+        flex: none !important;
+        width: fit-content;
+    }
 </style>
 {% endblock %}
 
@@ -32,11 +39,11 @@
         
         <!-- Logo e cabeçalho -->
         <div class="text-center mb-8">
-            <img src="{{ url_for('static', filename='images/amiraldo_logo_transparent_white.png') }}" 
+            <img id="logo" src="{{ url_for('static', filename='images/amiraldo_logo_transparent_white.png') }}" 
                  alt="DreamWalker Logo" 
                  class="w-28 h-auto rounded-full shadow-dream mx-auto mb-6">
             
-            <h1 class="text-3xl md:text-4xl font-orbitron text-white glow-text">Mapa Onírico</h1>
+            <h1 class="text-red-500 text-xl md:text-4xl font-orbitron mt-8 animate-pulse text-center">Mapa Onírico</h1>
             <p class="text-gray-400 mt-4 max-w-2xl mx-auto">
                 O Mapa Onírico é a bússola que guia sua jornada até os mistérios do DreamWalker. 
                 Cada marcador é uma chave, direcionando-o para onde os fios do sonho e da realidade se encontram.
@@ -64,9 +71,29 @@
         <div class="dream-card p-6 md:p-8 mb-12" data-anime="right">
             <h2 class="text-2xl font-orbitron text-white text-center mb-4">DreamWalker Plane</h2>
             <p class="text-gray-300 leading-relaxed text-center">
-                O Dreamwalker Plane é um projeto experimental que mergulha nas fronteiras entre os sonhos humanos 
-                e as capacidades da inteligência artificial. Utilizando IA para gerar e manipular cenários e narrativas, 
-                o projeto explora a fusão de realidades: a fluidez dos sonhos humanos com a precisão dos algoritmos.
+                O DreamWalker Plane nasce no ponto onde a realidade falha — 
+                e os sonhos assumem o controle. Aqui, sonhos lúcidos não são 
+                apenas experiências passageiras.
+                Eles são fragmentos de algo maior… ecos de uma mente que 
+                continua ativa mesmo quando o mundo real silencia.
+                Cada conto é reconstruído a partir dessas memórias instáveis — 
+                distorcidas, simbólicas, por vezes inquietantes.
+                Lugares que não existem.
+                Pessoas que nunca existiram.
+                Sensações que parecem mais reais do que a própria realidade.
+
+                Você não está apenas lendo histórias.
+                Você está atravessando camadas da consciência.
+
+                E quanto mais fundo você vai…
+                menos claro se torna o que é sonho — e o que nunca deixou de ser.
+
+                DreamWalker Plane não é apenas um projeto.
+                É um convite.
+
+                Para explorar.
+                Para questionar.
+                Para não acordar.
             </p>
         </div>
         
@@ -130,15 +157,15 @@
                 </div>
                 
                 <!-- Botões -->
-                <div class="flex flex-col sm:flex-row gap-4">
+                <div class="flex justify-center gap-4">
                     <button type="submit" 
                             id="btn-send"
-                            class="flex-1 bg-dream-purple hover:bg-dream-purple-light text-white font-orbitron py-3 rounded-lg transition-all duration-300">
+                            class="btn-comprar">
                         <i class="bi bi-send mr-2"></i> Enviar Mensagem
                     </button>
                     <button type="button" 
                             id="btn-send-loader"
-                            class="flex-1 bg-dream-purple text-white font-orbitron py-3 rounded-lg hidden"
+                            class="btn-comprar hidden"
                             disabled>
                         <span class="spinner-border spinner-border-sm mr-2" role="status"></span>
                         Enviando...
@@ -157,7 +184,7 @@
                 Se você sentiu o chamado, saiba que sua contribuição mantém essa jornada viva.
             </p>
             <a href="{{ url_for('doacoes.doacoes') }}" 
-               class="inline-block bg-dream-purple hover:bg-dream-purple-light text-white px-8 py-3 rounded-lg font-orbitron transition-all duration-300">
+               class="btn-comprar inline-block">
                 <i class="bi bi-heart mr-2"></i> Apoiar o Projeto
             </a>
         </div>
