@@ -6,13 +6,14 @@ Modelos SQLAlchemy para o banco de dados
 from flask_sqlalchemy import SQLAlchemy
 from datetime import datetime
 import bleach
+from sqlalchemy.dialects.postgresql import JSONB
 
 # Instância do SQLAlchemy
 db = SQLAlchemy()
-from sqlalchemy.dialects.postgresql import JSONB
 
-# Contador de visitas (banco)
+
 class Contador(db.Model):
+    """Contador de visitas (banco)"""
     __tablename__ = 'contador_visitas'
     id = db.Column(db.Integer, primary_key=True, default=1)
     visitantes = db.Column(db.Integer, default=0)
@@ -25,19 +26,6 @@ class Contador(db.Model):
             'downloads': self.downloads,
             'visitas': self.visitas or []
         }
-"""
-models.py - DreamWalker Plane
-Modelos SQLAlchemy para o banco de dados
-"""
-
-from flask_sqlalchemy import SQLAlchemy
-from datetime import datetime
-import bleach
-
-# Instância do SQLAlchemy
-# Instância do SQLAlchemy
-db = SQLAlchemy()
-# Contador de visitas (banco)
 
 
 class Relato(db.Model):

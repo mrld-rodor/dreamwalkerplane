@@ -32,21 +32,24 @@ def create_app():
     if not app.config['SECRET_KEY']:
         raise ValueError("SECRET_KEY não configurada! Defina no .env")
     
-    # Banco de dados (MariaDB/MySQL)
+    # Banco de dados (postgresql com SSL)
     database_url = os.getenv('DATABASE_URL')
     if not database_url:
         raise ValueError("DATABASE_URL não configurada! Defina no .env")
 
-    # Caminho para o certificado SSL
-    ssl_cert_path = os.path.join(os.path.dirname(__file__), 'global-bundle.pem')
+    # 🔧 CORREÇÃO DO SSL PARA POSTGRESQL NO RENDER
+    # Adiciona sslmode=require se não estiver na URL
+    if 'sslmode' not in database_url:
+        if '?' in database_url:
+            database_url += '&sslmode=require'
+        else:
+            database_url += '?sslmode=require'
+    
+    # Configuração SSL para psycopg2
     connect_args = {
         'connect_timeout': 30,
+        'sslmode': 'require'  # ← CORREÇÃO: Adiciona SSL explicitamente
     }
-    # Só adiciona SSL se o arquivo existir (produção)
-    if os.path.exists(ssl_cert_path):
-        connect_args['ssl'] = {'ca': ssl_cert_path}
-    else:
-        print("AVISO: Certificado SSL não encontrado. Conexão insegura!")
 
     app.config['SQLALCHEMY_DATABASE_URI'] = database_url
     app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
