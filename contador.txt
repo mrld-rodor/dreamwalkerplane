@@ -1,5 +1,5 @@
 downloads: 0
-visitantes: 97
+visitantes: 102
 visitas:
 - data: '2026-03-28 19:24:02'
   ip: 127.0.0.1
@@ -386,6 +386,26 @@ visitas:
   local: Localhost
   tipo: Privado
 - data: '2026-03-31 10:16:10'
+  ip: 127.0.0.1
+  local: Localhost
+  tipo: Privado
+- data: '2026-03-31 12:01:19'
+  ip: 127.0.0.1
+  local: Localhost
+  tipo: Privado
+- data: '2026-03-31 12:04:31'
+  ip: 127.0.0.1
+  local: Localhost
+  tipo: Privado
+- data: '2026-03-31 12:12:32'
+  ip: 127.0.0.1
+  local: Localhost
+  tipo: Privado
+- data: '2026-03-31 12:13:53'
+  ip: 127.0.0.1
+  local: Localhost
+  tipo: Privado
+- data: '2026-03-31 12:16:47'
   ip: 127.0.0.1
   local: Localhost
   tipo: Privado

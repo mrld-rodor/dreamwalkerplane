@@ -150,8 +150,8 @@ def admin_login():
         username = request.form.get('username', '').strip()
         password = request.form.get('password', '').strip()
         
-        admin_user = os.getenv('ADMIN_USERNAME')
-        admin_pass = os.getenv('ADMIN_PASSWORD')
+        admin_user = current_app.config.get('ADMIN_USERNAME')
+        admin_pass = current_app.config.get('ADMIN_PASSWORD')
         
         if username == admin_user and password == admin_pass:
             session['admin_logged'] = True
