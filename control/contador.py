@@ -91,17 +91,18 @@ def analisar_ip(ip):
 # FUNÇÕES DO CONTADOR
 # ============================================================================
 
-def inicializar_contador():
-    """Inicializa o arquivo de contador se não existir"""
-    if not os.path.exists(contador_file):
-        with open(contador_file, 'w') as f:
-            data = {
-                'visitantes': 0,
-                'downloads': 0,
-                'visitas': []
-            }
-            yaml.dump(data, f, default_flow_style=False)
-            print("[contador] Arquivo inicializado com sucesso!")
+def obter_contadores():
+    try:
+        with open('caminho/do/arquivo.yaml', 'r') as file:
+            conteudo = file.read()
+        data = yaml.safe_load(conteudo)
+        # ... resto do código
+    except FileNotFoundError:
+        # Cria arquivo padrão se não existir
+        data = {'visitantes': 0, 'downloads': 0, 'visitas': []}
+        with open('caminho/do/arquivo.yaml', 'w') as file:
+            yaml.dump(data, file)
+        return data
 
 
 def obter_contadores():
