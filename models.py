@@ -1,3 +1,18 @@
+from sqlalchemy.dialects.postgresql import JSONB
+# Contador de visitas (banco)
+class Contador(db.Model):
+    __tablename__ = 'contador_visitas'
+    id = db.Column(db.Integer, primary_key=True, default=1)
+    visitantes = db.Column(db.Integer, default=0)
+    downloads = db.Column(db.Integer, default=0)
+    visitas = db.Column(JSONB, default=list)  # Lista de dicionários
+
+    def to_dict(self):
+        return {
+            'visitantes': self.visitantes,
+            'downloads': self.downloads,
+            'visitas': self.visitas or []
+        }
 """
 models.py - DreamWalker Plane
 Modelos SQLAlchemy para o banco de dados

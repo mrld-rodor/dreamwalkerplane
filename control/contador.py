@@ -1,3 +1,4 @@
+from models import db, Contador
 """
 control/contador.py
 =============================================================================
@@ -106,29 +107,38 @@ def obter_contadores():
 
 
 def inicializar_contador():
-    """Inicializa o arquivo de contador se não existir"""
-    if not os.path.exists(contador_file):
-        data = {'visitantes': 0, 'downloads': 0, 'visitas': []}
-        with open(contador_file, 'w') as f:
-            yaml.dump(data, f)
+        # Inicializa no banco, se possível
+        try:
+            if not Contador.query.get(1):
+                c = Contador(id=1, visitantes=0, downloads=0, visitas=[])
+                db.session.add(c)
+                db.session.commit()
+        except Exception:
+            pass
+        """Inicializa o arquivo de contador se não existir"""
+        if not os.path.exists(contador_file):
+            data = {'visitantes': 0, 'downloads': 0, 'visitas': []}
+            with open(contador_file, 'w') as f:
+                yaml.dump(data, f)
 
 def obter_contadores():
     """Retorna (visitantes, downloads, lista_visitas)"""
+    # Primeiro tenta banco
+    try:
+        c = Contador.query.get(1)
+        if c:
+            d = c.to_dict()
+            return d['visitantes'], d['downloads'], d['visitas']
+    except Exception:
+        pass
+    # Fallback: arquivo
     if not os.path.exists(contador_file):
         inicializar_contador()
-
     with open(contador_file, 'r') as f:
         conteudo = f.read()
-
     data = yaml.safe_load(conteudo)
-
     if data is None:
-        data = {
-            'visitantes': 0,
-            'downloads': 0,
-            'visitas': []
-        }
-
+        data = {'visitantes': 0, 'downloads': 0, 'visitas': []}
     return data.get('visitantes', 0), data.get('downloads', 0), data.get('visitas', [])
 
 
@@ -137,12 +147,9 @@ def atualizar_contadores(visitas=0, downloads=0, ip=None):
     Atualiza os contadores e registra uma nova visita
     """
     visitantes, downloads_atual, visitas_lista = obter_contadores()
-
     visitantes += visitas
     downloads_atual += downloads
-
     agora = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
-
     # Análise do IP
     if ip and ip not in ['127.0.0.1', 'localhost']:
         try:
@@ -155,21 +162,30 @@ def atualizar_contadores(visitas=0, downloads=0, ip=None):
     else:
         local = "Localhost"
         tipo_ip = "Privado"
-    
-    # Registro da visita
     registro_visita = {
         'data': agora,
         'ip': ip if ip else 'desconhecido',
         'tipo': tipo_ip,
         'local': local
     }
-
     visitas_lista.append(registro_visita)
-
-    # Mantém apenas as últimas 500 visitas
     if len(visitas_lista) > 500:
         visitas_lista = visitas_lista[-500:]
-
+    # Primeiro tenta banco
+    try:
+        c = Contador.query.get(1)
+        if not c:
+            c = Contador(id=1, visitantes=visitantes, downloads=downloads_atual, visitas=visitas_lista)
+            db.session.add(c)
+        else:
+            c.visitantes = visitantes
+            c.downloads = downloads_atual
+            c.visitas = visitas_lista
+        db.session.commit()
+        return
+    except Exception:
+        pass
+    # Fallback: arquivo
     with open(contador_file, 'w') as f:
         data = {
             'visitantes': visitantes,
