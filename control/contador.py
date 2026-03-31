@@ -105,6 +105,13 @@ def obter_contadores():
         return data
 
 
+def inicializar_contador():
+    """Inicializa o arquivo de contador se não existir"""
+    if not os.path.exists(contador_file):
+        data = {'visitantes': 0, 'downloads': 0, 'visitas': []}
+        with open(contador_file, 'w') as f:
+            yaml.dump(data, f)
+
 def obter_contadores():
     """Retorna (visitantes, downloads, lista_visitas)"""
     if not os.path.exists(contador_file):

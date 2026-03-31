@@ -5,7 +5,7 @@ gunicorn==23.0.0
 
 # Database - SQLAlchemy para MariaDB/MySQL
 Flask-SQLAlchemy==3.1.1
-PyMySQL==1.1.1          # Driver para MySQL/MariaDB
+psycopg2-binary==2.9.9  # Driver para PostgreSQL
 cryptography==44.0.0    # Para conexão segura
 
 # Forms e Validação
