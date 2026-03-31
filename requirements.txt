@@ -1,22 +1,33 @@
-# Core
-Flask==3.1.0
-python-dotenv==1.0.1
-gunicorn==23.0.0
-
-# Database - SQLAlchemy para MariaDB/MySQL
-Flask-SQLAlchemy==3.1.1
-psycopg2-binary==2.9.9  # Driver para PostgreSQL
-cryptography==44.0.0    # Para conexão segura
-
-# Forms e Validação
-Flask-WTF==1.2.1
-WTForms==3.1.2
-email-validator==2.1.1
-
-# Seus existentes
-requests==2.32.3
-PyYAML==6.0.2
+bleach==6.1.0
 blinker==1.9.0
-
-# Extras úteis
-bleach==6.1.0           # Sanitizar HTML dos relatos
+certifi==2026.2.25
+cffi==2.0.0
+charset-normalizer==3.4.6
+click==8.3.1
+cryptography==44.0.0
+dnspython==2.8.0
+email_validator==2.1.1
+Flask==3.1.0
+Flask-SQLAlchemy==3.1.1
+Flask-WTF==1.2.1
+greenlet==3.3.2
+gunicorn==23.0.0
+idna==3.11
+itsdangerous==2.2.0
+Jinja2==3.1.6
+MarkupSafe==3.0.3
+packaging==26.0
+psycopg2-binary==2.9.11
+pycparser==3.0
+PyMySQL==1.1.1
+python-dotenv==1.0.1
+PyYAML==6.0.2
+requests==2.32.3
+scapy==2.7.0
+six==1.17.0
+SQLAlchemy==2.0.48
+typing_extensions==4.15.0
+urllib3==2.6.3
+webencodings==0.5.1
+Werkzeug==3.1.7
+WTForms==3.1.2
