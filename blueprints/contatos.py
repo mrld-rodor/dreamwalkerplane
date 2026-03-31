@@ -1,14 +1,23 @@
 """
 blueprints/contato.py - Sistema de Contato com envio de email
-Usa seu código existente de email (control/email_function.py)
 """
 
 from flask import Blueprint, render_template, request, redirect, url_for, flash, current_app
 import requests
 import os
 
-# Importa suas funções de email existentes
-from control.email_function import Contato, send_email
+
+# =====================================================
+# CLASSE CONTATO
+# =====================================================
+class Contato:
+    """Classe para armazenar os dados do formulário de contato"""
+    def __init__(self, nome, email, mensagem):
+        self.nome = nome
+        self.email = email
+        self.mensagem = mensagem
+# =====================================================
+
 
 contato_bp = Blueprint('contato', __name__, url_prefix='/contato')
 
@@ -71,9 +80,10 @@ def contato():
                 flash(erro, 'danger')
             return render_template('contato.html', nome=nome, email=email, mensagem=mensagem, config=current_app.config)
         
-        # 5. Envia email usando sua função existente
+        # 5. Envia email usando SendGrid
         try:
-            contato = Contato(nome, email, mensagem)
+            from control.sendgrid_email import send_email
+            contato = Contato(nome, email, mensagem)  # ← usa a classe definida acima
             send_email(contato)
             flash('Mensagem enviada com sucesso! Entrarei em contato em breve.', 'success')
             return redirect(url_for('contato.contato'))

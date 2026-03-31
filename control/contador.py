@@ -85,14 +85,24 @@ def analisar_ip(ip):
 def inicializar_contador():
     """Inicializa o contador no banco de dados se não existir"""
     try:
-        # Verifica se o contador já existe
-        if not Contador.query.get(1):
-            c = Contador(id=1, visitantes=0, downloads=0, visitas=[])
-            db.session.add(c)
-            db.session.commit()
-            print("[INFO] Contador inicializado no banco de dados")
+        # Tenta importar o app atual para o contexto
+        from flask import current_app
+        with current_app.app_context():
+            if not Contador.query.get(1):
+                c = Contador(id=1, visitantes=0, downloads=0, visitas=[])
+                db.session.add(c)
+                db.session.commit()
+                print("[INFO] Contador inicializado no banco de dados")
     except Exception as e:
-        print(f"[WARN] Não foi possível inicializar contador no banco: {e}")
+        # Se falhar, tenta sem o contexto (pode falhar na inicialização)
+        try:
+            if not Contador.query.get(1):
+                c = Contador(id=1, visitantes=0, downloads=0, visitas=[])
+                db.session.add(c)
+                db.session.commit()
+                print("[INFO] Contador inicializado no banco de dados")
+        except Exception as e2:
+            print(f"[WARN] Não foi possível inicializar contador: {e2}")
 
 
 def obter_contadores():
