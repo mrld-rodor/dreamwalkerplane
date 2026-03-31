@@ -76,7 +76,7 @@ def send_email(contato):
         </body>
         </html>
         """,
-        plain_content=f"""
+            plain_text_content=f"""
 Novo contato no DreamWalker Plane!
 
 Nome: {contato.nome}
@@ -84,7 +84,6 @@ Email: {contato.email}
 Mensagem:
 {contato.mensagem}
 
----
 Enviado automaticamente pelo DreamWalker Plane
         """
     )
