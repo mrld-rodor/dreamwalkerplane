@@ -36,7 +36,20 @@ def create_app():
     database_url = os.getenv('DATABASE_URL')
     if not database_url:
         raise ValueError("DATABASE_URL não configurada! Defina no .env")
-    
+
+    # Caminho para o certificado SSL
+    ssl_cert_path = os.path.join(os.path.dirname(__file__), 'global-bundle.pem')
+    connect_args = {
+        'connect_timeout': 30,
+        'read_timeout': 60,
+        'write_timeout': 60,
+    }
+    # Só adiciona SSL se o arquivo existir (produção)
+    if os.path.exists(ssl_cert_path):
+        connect_args['ssl'] = {'ca': ssl_cert_path}
+    else:
+        print("AVISO: Certificado SSL não encontrado. Conexão insegura!")
+
     app.config['SQLALCHEMY_DATABASE_URI'] = database_url
     app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
     app.config['SQLALCHEMY_ENGINE_OPTIONS'] = {
@@ -44,14 +57,9 @@ def create_app():
         'max_overflow': 10,
         'pool_recycle': 3600,
         'pool_pre_ping': True,
-        'connect_args': {
-            'connect_timeout': 30,
-            'read_timeout': 60,
-            'write_timeout': 60,
-            'autocommit': True,
-        }
+        'connect_args': connect_args
     }
-    
+
     # Email
     app.config['MAIL_SERVER'] = os.getenv('MAIL_SERVER', 'smtp.gmail.com')
     app.config['MAIL_PORT'] = int(os.getenv('MAIL_PORT', 587))
@@ -74,6 +82,8 @@ def create_app():
     # Admin
     app.config['ADMIN_PASSWORD'] = os.getenv('ADMIN_PASSWORD')
     app.config['ADMIN_USERNAME'] = os.getenv('ADMIN_USERNAME')
+
+
     
     # ========== INICIALIZA EXTENSÕES ==========
     db.init_app(app)
@@ -106,6 +116,7 @@ def create_app():
     app.register_blueprint(doacoes_bp)
     
     return app
+
 
 
 # Cria a aplicação para o servidor
