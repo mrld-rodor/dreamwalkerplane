@@ -41,8 +41,6 @@ def create_app():
     ssl_cert_path = os.path.join(os.path.dirname(__file__), 'global-bundle.pem')
     connect_args = {
         'connect_timeout': 30,
-        'read_timeout': 60,
-        'write_timeout': 60,
     }
     # Só adiciona SSL se o arquivo existir (produção)
     if os.path.exists(ssl_cert_path):
