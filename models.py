@@ -23,7 +23,9 @@ from datetime import datetime
 import bleach
 
 # Instância do SQLAlchemy
+# Instância do SQLAlchemy
 db = SQLAlchemy()
+# Contador de visitas (banco)
 
 
 class Relato(db.Model):
