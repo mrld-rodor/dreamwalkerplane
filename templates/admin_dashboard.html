@@ -24,38 +24,48 @@ window.dashboardData = {
 <script src="{{ url_for('static', filename='js/dashboard_charts.js') }}"></script>
 <script>
 document.addEventListener('DOMContentLoaded', function() {
-    if (window.dashboardData.paises && window.dashboardData.paises.length && document.getElementById('globoVisitantes')) {
-        // Países → coordenadas aproximadas (centro do país)
-        const countryCoords = {
-            'Brasil': {lat: -14.2350, lng: -51.9253},
-            'Portugal': {lat: 39.3999, lng: -8.2245},
-            'United States': {lat: 37.0902, lng: -95.7129},
-            'France': {lat: 46.6034, lng: 1.8883},
-            'Germany': {lat: 51.1657, lng: 10.4515},
-            'Spain': {lat: 40.4637, lng: -3.7492},
-            'Italy': {lat: 41.8719, lng: 12.5674},
-            'United Kingdom': {lat: 55.3781, lng: -3.4360},
-            'Japan': {lat: 36.2048, lng: 138.2529},
-            'India': {lat: 20.5937, lng: 78.9629},
-            'Argentina': {lat: -38.4161, lng: -63.6167},
-            'Mexico': {lat: 23.6345, lng: -102.5528},
-            // ...adicione mais se necessário
-        };
-        const markers = window.dashboardData.paises.map(pais => {
+    const globeEl = document.getElementById('globoVisitantes');
+    if (!globeEl) return;
+    // Países → coordenadas aproximadas (centro do país)
+    const countryCoords = {
+        'Brasil': {lat: -14.2350, lng: -51.9253},
+        'Portugal': {lat: 39.3999, lng: -8.2245},
+        'United States': {lat: 37.0902, lng: -95.7129},
+        'France': {lat: 46.6034, lng: 1.8883},
+        'Germany': {lat: 51.1657, lng: 10.4515},
+        'Spain': {lat: 40.4637, lng: -3.7492},
+        'Italy': {lat: 41.8719, lng: 12.5674},
+        'United Kingdom': {lat: 55.3781, lng: -3.4360},
+        'Japan': {lat: 36.2048, lng: 138.2529},
+        'India': {lat: 20.5937, lng: 78.9629},
+        'Argentina': {lat: -38.4161, lng: -63.6167},
+        'Mexico': {lat: 23.6345, lng: -102.5528},
+        // ...adicione mais se necessário
+    };
+    // Cor primária do tema e cor dos visitantes
+    const azulPrimario = '#0603b4';
+    const vermelhoVisitante = '#ff3333';
+    // Se não houver visitantes, mostra marcador azul no Brasil
+    let paises = window.dashboardData.paises;
+    let markers = [];
+    if (!paises || !paises.length) {
+        markers = [{ lat: countryCoords['Brasil'].lat, lng: countryCoords['Brasil'].lng, size: 0.5, color: azulPrimario, country: 'Brasil' }];
+    } else {
+        markers = paises.map(pais => {
             const coords = countryCoords[pais] || {lat: 0, lng: 0};
-            return { lat: coords.lat, lng: coords.lng, size: 0.5, color: '#22d3ee', country: pais };
+            return { lat: coords.lat, lng: coords.lng, size: 0.5, color: vermelhoVisitante, country: pais };
         });
-        const globe = Globe()
-            .globeImageUrl('https://unpkg.com/three-globe/example/img/earth-dark.jpg')
-            .pointOfView({lat: 0, lng: 0, altitude: 2})
-            .pointsData(markers)
-            .pointLat('lat')
-            .pointLng('lng')
-            .pointColor('color')
-            .pointAltitude('size')
-            .pointLabel('country');
-        globe(document.getElementById('globoVisitantes'));
     }
+    const globe = Globe()
+        .globeImageUrl('https://unpkg.com/three-globe/example/img/earth-blue-marble.jpg')
+        .pointOfView({lat: 0, lng: 0, altitude: 2})
+        .pointsData(markers)
+        .pointLat('lat')
+        .pointLng('lng')
+        .pointColor('color')
+        .pointAltitude('size')
+        .pointLabel('country');
+    globe(globeEl);
 });
 </script>
 {% endblock %}
