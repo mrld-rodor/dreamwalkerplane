@@ -40,7 +40,7 @@
         
         <!-- Navegação -->
         <div class="mb-6">
-            <a href="{{ url_for('mural') }}" class="text-dream-purple hover:text-dream-purple-light transition">
+            <a href="{{ url_for('main.mural') }}" class="text-dream-purple hover:text-dream-purple-light transition">
                 <i class="bi bi-arrow-left"></i> Voltar para o Mural
             </a>
         </div>
@@ -100,7 +100,7 @@
             <div class="mt-6 pt-6 border-t border-dream-purple/30">
                 <h4 class="text-xl font-orbitron text-white mb-4">Deixe seu comentário</h4>
                 
-                <form method="POST" action="{{ url_for('comentar', post_id=post.id) }}" class="comment-form">
+                <form method="POST" action="{{ url_for('main.comentar', post_id=post.id) }}" class="comment-form">
                     <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
                         <input type="text" name="autor" placeholder="Seu nome" required
                                class="bg-gray-800 border border-gray-700 rounded-lg px-4 py-2 text-white focus:outline-none focus:border-dream-purple">
@@ -109,9 +109,24 @@
                     </div>
                     <textarea name="conteudo" rows="4" placeholder="Escreva seu comentário..." required
                               class="w-full bg-gray-800 border border-gray-700 rounded-lg px-4 py-2 text-white focus:outline-none focus:border-dream-purple mb-4"></textarea>
-                    <button type="submit" class="bg-dream-purple hover:bg-dream-purple-light text-white px-6 py-2 rounded-lg transition">
-                        <i class="bi bi-send mr-2"></i> Enviar comentário
-                    </button>
+                        {% if comment_recaptcha_site_key %}
+                        <div class="mb-4 flex justify-center">
+                            <div class="g-recaptcha" data-sitekey="{{ comment_recaptcha_site_key }}"></div>
+                        </div>
+                        {% elif use_math_captcha %}
+                        <div class="mb-4 flex flex-col items-center text-center">
+                            <label for="captcha_answer" class="block text-sm text-gray-300 mb-2">
+                                Confirmacao anti-spam: quanto e {{ captcha_left }} + {{ captcha_right }}?
+                            </label>
+                            <input id="captcha_answer" type="text" name="captcha_answer" inputmode="numeric" placeholder="Digite o resultado" required
+                                   class="w-full md:w-64 bg-gray-800 border border-gray-700 rounded-lg px-4 py-2 text-white focus:outline-none focus:border-dream-purple">
+                        </div>
+                        {% endif %}
+                        <div class="flex justify-center">
+                            <button type="submit" class="btn-comprar inline-flex items-center justify-center">
+                                <i class="bi bi-send mr-2"></i> Enviar comentário
+                            </button>
+                        </div>
                 </form>
                 <p class="text-gray-500 text-xs mt-3">
                     <i class="bi bi-info-circle"></i> Comentários passam por moderação antes de aparecerem
@@ -134,4 +149,10 @@
         
     </div>
 </div>
+{% endblock %}
+
+{% block extra_js %}
+{% if comment_recaptcha_site_key %}
+<script src="https://www.google.com/recaptcha/api.js" async defer></script>
+{% endif %}
 {% endblock %}

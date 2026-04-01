@@ -71,6 +71,18 @@ def create_app():
     # reCAPTCHA
     app.config['RECAPTCHA_SITE_KEY'] = os.getenv('RECAPTCHA_SITE_KEY')
     app.config['RECAPTCHA_SECRET_KEY'] = os.getenv('RECAPTCHA_SECRET_KEY')
+
+    # Formulario de contato
+    app.config['CONTACT_RECAPTCHA_SITE_KEY'] = os.getenv('RECAPTCHA_SITE_KEY')
+    app.config['CONTACT_RECAPTCHA_SECRET_KEY'] = os.getenv('RECAPTCHA_SECRET_KEY')
+
+    # Formulario de comentarios
+    app.config['COMMENT_RECAPTCHA_SITE_KEY'] = os.getenv('RECAPTCHA_SITE_KEY2')
+    app.config['COMMENT_RECAPTCHA_SECRET_KEY'] = os.getenv('RECAPTCHA_SECRET_KEY2')
+
+    # Formulario de relatos
+    app.config['RELATO_RECAPTCHA_SITE_KEY'] = os.getenv('RECAPTCHA_SITE_KEY3')
+    app.config['RELATO_RECAPTCHA_SECRET_KEY'] = os.getenv('RECAPTCHA_SECRET_KEY3')
     
     # Hotmart Links
     app.config['HOTMART_CONTO_000'] = os.getenv('HOTMART_CONTO_000')

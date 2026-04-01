@@ -7,9 +7,11 @@ from flask import Blueprint, render_template, request, current_app, session, red
 from control.contador import atualizar_contadores, obter_contadores
 from functools import wraps
 import os
+import random
 from datetime import datetime
 from collections import defaultdict
 from models import Relato, Comentario, db
+from control.recaptcha import verify_recaptcha
 
 # Cria o Blueprint
 main_bp = Blueprint('main', __name__)
@@ -23,16 +25,18 @@ def index():
     return render_template('index.html')
 
 
+def get_hotmart_links():
+    """Retorna o mapeamento centralizado dos links de compra da Hotmart."""
+    return {
+        '002': current_app.config.get('HOTMART_CONTO_002', '#'),
+        '001': current_app.config.get('HOTMART_CONTO_001', '#'),
+        '000': current_app.config.get('HOTMART_CONTO_000', '#'),
+    }
+
+
 @main_bp.route('/contos')
 def contos():
     """Página com lista de contos e links Hotmart"""
-    # Pega os links do Hotmart das variáveis de ambiente
-    hotmart_links = {
-        'conto_000': current_app.config.get('HOTMART_CONTO_000', '#'),
-        'conto_001': current_app.config.get('HOTMART_CONTO_001', '#'),
-        'conto_002': current_app.config.get('HOTMART_CONTO_002', '#'),
-    }
-    
     # Lista dos contos com seus dados
     contos_lista = [
         {
@@ -54,8 +58,7 @@ def contos():
                 'sobre os limites da realidade, a coragem de enfrentar o desconhecido e a\n'
                 'eterna dúvida sobre o que é a verdadeira salvação.'
             ),
-            'arquivo': 'conto_002.pdf',
-            'hotmart_link': hotmart_links['conto_002']
+            'arquivo': 'conto_002.pdf'
         },
         {
             'id': '001',
@@ -76,8 +79,7 @@ def contos():
                 'profunda do desconhecido, onde realidade e sonho se entrelaçam\n'
                 'de maneira perturbadora.'
             ),
-            'arquivo': 'conto_001.pdf',
-            'hotmart_link': hotmart_links['conto_001']
+            'arquivo': 'conto_001.pdf'
         },
         {
             'id': '000',
@@ -90,12 +92,26 @@ def contos():
                 'as convenções da mente humana, este conto é para você. Prepare-se para ser \n'
                 'envolvido em uma trama de mistério, tensão e revelações inesperadas.'
             ),
-            'arquivo': 'conto_000.pdf',
-            'hotmart_link': hotmart_links['conto_000']
+            'arquivo': 'conto_000.pdf'
         }
     ]
     
     return render_template('contos.html', contos=contos_lista)
+
+
+@main_bp.route('/comprar/<conto_id>')
+def comprar_conto(conto_id):
+    """Conta o clique de compra e redireciona para o link correspondente da Hotmart."""
+    hotmart_links = get_hotmart_links()
+    hotmart_link = hotmart_links.get(conto_id)
+
+    if not hotmart_link or hotmart_link == '#':
+        flash('Link de compra indisponivel no momento.', 'warning')
+        return redirect(url_for('main.contos'))
+
+    ip = request.headers.get('X-Forwarded-For', request.remote_addr)
+    atualizar_contadores(downloads=1, ip=ip)
+    return redirect(hotmart_link)
 
 
 @main_bp.route('/sonhar')
@@ -114,15 +130,6 @@ def termosuso():
 def politica():
     """Política de Privacidade"""
     return render_template('p_privacy.html')
-
-
-# @main_bp.route('/download/<filename>')
-# def download_file(filename):
-#     """Download dos contos (atualiza contador)"""
-#     ip = request.headers.get('X-Forwarded-For', request.remote_addr)
-#     from control.contador import atualizar_contadores
-#     atualizar_contadores(downloads=1, ip=ip)
-#     return send_from_directory('static/download', filename)
 
 
 # ==================== PROTEÇÃO DE ROTAS ADMIN ====================
@@ -201,6 +208,7 @@ def admin_dashboard():
     comentarios_aprovados = Comentario.query.filter_by(status='aprovado').count()
     comentarios_pendentes = Comentario.query.filter_by(status='pendente').count()
     comentarios_rejeitados = Comentario.query.filter_by(status='rejeitado').count()
+    ultimos_comentarios = Comentario.query.order_by(Comentario.data_envio.desc()).limit(10).all()
 
     # Agrupamento de visitas por dia
     from collections import Counter
@@ -232,11 +240,36 @@ def admin_dashboard():
                           relatos_pendentes=relatos_pendentes,
                           relatos_rejeitados=relatos_rejeitados,
                           ultimos_relatos=ultimos_relatos,
+                          ultimos_comentarios=ultimos_comentarios,
                           total_comentarios=total_comentarios,
                           comentarios_aprovados=comentarios_aprovados,
                           comentarios_pendentes=comentarios_pendentes,
                           comentarios_rejeitados=comentarios_rejeitados,
                           paises=paises)
+
+
+@main_bp.route('/admin-dashboard/relatos/<int:relato_id>/delete', methods=['POST'])
+@login_required
+def admin_delete_relato(relato_id):
+    """Exclui um relato diretamente pelo dashboard."""
+    relato = Relato.query.get_or_404(relato_id)
+    titulo = relato.titulo
+    db.session.delete(relato)
+    db.session.commit()
+    flash(f'Relato "{titulo}" apagado com sucesso.', 'success')
+    return redirect(url_for('main.admin_dashboard'))
+
+
+@main_bp.route('/admin-dashboard/comentarios/<int:comentario_id>/delete', methods=['POST'])
+@login_required
+def admin_delete_comentario(comentario_id):
+    """Exclui um comentário diretamente pelo dashboard."""
+    comentario = Comentario.query.get_or_404(comentario_id)
+    autor = comentario.autor
+    db.session.delete(comentario)
+    db.session.commit()
+    flash(f'Comentário de "{autor}" apagado com sucesso.', 'success')
+    return redirect(url_for('main.admin_dashboard'))
 
 
 
@@ -311,8 +344,28 @@ def ver_post(post_id):
     db.session.commit()
     
     comentarios_aprovados = Comentario.query.filter_by(relato_id=post_id, status='aprovado').order_by(Comentario.data_envio.desc()).all()
+    comment_recaptcha_site_key = current_app.config.get('COMMENT_RECAPTCHA_SITE_KEY')
+    comment_recaptcha_secret_key = current_app.config.get('COMMENT_RECAPTCHA_SECRET_KEY')
+    use_math_captcha = not (comment_recaptcha_site_key and comment_recaptcha_secret_key)
+
+    captcha_left = None
+    captcha_right = None
+    if use_math_captcha:
+        captcha_left = random.randint(1, 9)
+        captcha_right = random.randint(1, 9)
+        session['comment_captcha_answer'] = captcha_left + captcha_right
+    else:
+        session.pop('comment_captcha_answer', None)
     
-    return render_template('post.html', post=post, comentarios_aprovados=comentarios_aprovados)
+    return render_template(
+        'post.html',
+        post=post,
+        comentarios_aprovados=comentarios_aprovados,
+        comment_recaptcha_site_key=comment_recaptcha_site_key,
+        use_math_captcha=use_math_captcha,
+        captcha_left=captcha_left,
+        captcha_right=captcha_right
+    )
 
 
 @main_bp.route('/post/<int:post_id>/comentar', methods=['POST'])
@@ -320,11 +373,33 @@ def comentar(post_id):
     autor = request.form.get('autor', '').strip()
     email = request.form.get('email', '').strip()
     conteudo = request.form.get('conteudo', '').strip()
+    captcha_answer = request.form.get('captcha_answer', '').strip()
+    recaptcha_response = request.form.get('g-recaptcha-response', '').strip()
     ip = request.headers.get('X-Forwarded-For', request.remote_addr)
     
     if not autor or not conteudo:
         flash('Nome e comentário são obrigatórios!', 'danger')
-        return redirect(url_for('ver_post', post_id=post_id))
+        return redirect(url_for('main.ver_post', post_id=post_id))
+
+    comment_recaptcha_secret_key = current_app.config.get('COMMENT_RECAPTCHA_SECRET_KEY')
+    comment_recaptcha_site_key = current_app.config.get('COMMENT_RECAPTCHA_SITE_KEY')
+
+    if comment_recaptcha_secret_key and comment_recaptcha_site_key:
+        recaptcha_ok, recaptcha_error = verify_recaptcha(
+            secret_key=comment_recaptcha_secret_key,
+            response_token=recaptcha_response,
+            remote_ip=request.remote_addr,
+            logger=current_app.logger,
+            form_name='comentario'
+        )
+        if not recaptcha_ok:
+            flash(recaptcha_error, 'danger')
+            return redirect(url_for('main.ver_post', post_id=post_id))
+    else:
+        captcha_expected = session.get('comment_captcha_answer')
+        if captcha_expected is None or not captcha_answer.isdigit() or int(captcha_answer) != captcha_expected:
+            flash('Captcha invalido. Resolva a conta antes de enviar o comentario.', 'danger')
+            return redirect(url_for('main.ver_post', post_id=post_id))
     
     comentario = Comentario(
         relato_id=post_id,
@@ -337,6 +412,7 @@ def comentar(post_id):
     
     db.session.add(comentario)
     db.session.commit()
+    session.pop('comment_captcha_answer', None)
     
     flash('Comentário enviado! Aguarde aprovação.', 'success')
-    return redirect(url_for('ver_post', post_id=post_id))
+    return redirect(url_for('main.ver_post', post_id=post_id))

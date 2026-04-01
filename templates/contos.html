@@ -62,7 +62,7 @@
                 
                 <!-- Botão de compra (APENAS) -->
                 <div class="flex flex-col sm:flex-row gap-3 mt-4 justify-center">
-                    <a href="{{ conto.hotmart_link }}" 
+                    <a href="{{ url_for('main.comprar_conto', conto_id=conto.id) }}" 
                        target="_blank"
                        class="btn-comprar">
                         <i class="bi bi-cart3 mr-2"></i> Comprar 

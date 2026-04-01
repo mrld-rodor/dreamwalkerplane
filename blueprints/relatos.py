@@ -4,10 +4,11 @@ Usuário envia relato → status 'pendente' → admin valida → aparece no mura
 """
 
 from flask import Blueprint, render_template, request, redirect, url_for, flash, session, current_app
-from models import db, Relato
+from models import db, Relato, Comentario
 from datetime import datetime
 import bleach
 import requests
+from control.recaptcha import verify_recaptcha
 
 # Cria o Blueprint com prefixo /relatos
 relatos_bp = Blueprint('relatos', __name__, url_prefix='/relatos')
@@ -76,25 +77,18 @@ def enviar_relato():
         
         # 3. Valida reCAPTCHA
         recaptcha_response = request.form.get('g-recaptcha-response')
-        secret_key = current_app.config.get('RECAPTCHA_SECRET_KEY')
+        secret_key = current_app.config.get('RELATO_RECAPTCHA_SECRET_KEY')
         
-        if secret_key and recaptcha_response:
-            verify_url = 'https://www.google.com/recaptcha/api/siteverify'
-            payload = {
-                'secret': secret_key,
-                'response': recaptcha_response,
-                'remoteip': request.remote_addr
-            }
-            
-            try:
-                r = requests.post(verify_url, data=payload, timeout=10)
-                result = r.json()
-                if not result.get('success'):
-                    erros.append('Verificação reCAPTCHA falhou. Tente novamente.')
-            except:
-                erros.append('Erro na verificação de segurança.')
-        elif secret_key and not recaptcha_response:
-            erros.append('Por favor, complete a verificação reCAPTCHA.')
+        if secret_key:
+            recaptcha_ok, recaptcha_error = verify_recaptcha(
+                secret_key=secret_key,
+                response_token=recaptcha_response,
+                remote_ip=request.remote_addr,
+                logger=current_app.logger,
+                form_name='relato'
+            )
+            if not recaptcha_ok:
+                erros.append(recaptcha_error)
         
         # 4. Sanitização do conteúdo (remove XSS)
         allowed_tags = ['p', 'br', 'strong', 'em', 'u', 'blockquote']
@@ -108,7 +102,8 @@ def enviar_relato():
                                   autor=autor, 
                                   titulo=titulo, 
                                   conteudo=conteudo,
-                                  config=current_app.config)
+                                  config=current_app.config,
+                                  relato_recaptcha_site_key=current_app.config.get('RELATO_RECAPTCHA_SITE_KEY'))
         
         # 6. Salva no banco de dados
         ip = request.headers.get('X-Forwarded-For', request.remote_addr)
@@ -136,10 +131,11 @@ def enviar_relato():
                                   autor=autor, 
                                   titulo=titulo, 
                                   conteudo=conteudo,
-                                  config=current_app.config)
+                                  config=current_app.config,
+                                  relato_recaptcha_site_key=current_app.config.get('RELATO_RECAPTCHA_SITE_KEY'))
     
     # GET: exibe formulário vazio
-    return render_template('enviar_relato.html', config=current_app.config)
+    return render_template('enviar_relato.html', config=current_app.config, relato_recaptcha_site_key=current_app.config.get('RELATO_RECAPTCHA_SITE_KEY'))
 
 
 # ============================================================
@@ -158,8 +154,16 @@ def admin_pendentes():
     relatos_pendentes = Relato.query.filter_by(status='pendente')\
         .order_by(Relato.data_envio.desc())\
         .all()
+    comentarios_pendentes = Comentario.query.filter_by(status='pendente')\
+        .order_by(Comentario.data_envio.desc())\
+        .all()
     
-    return render_template('admin_relatos.html', relatos=relatos_pendentes, status_filtro='pendente')
+    return render_template(
+        'admin_relatos.html',
+        relatos=relatos_pendentes,
+        comentarios=comentarios_pendentes,
+        status_filtro='pendente'
+    )
 
 
 @relatos_bp.route('/admin/login', methods=['GET', 'POST'])
@@ -219,6 +223,36 @@ def rejeitar_relato(relato_id):
     # db.session.delete(relato)
     # db.session.commit()
     
+    return redirect(url_for('relatos.admin_pendentes'))
+
+
+@relatos_bp.route('/admin/comentarios/aprovar/<int:comentario_id>')
+def aprovar_comentario(comentario_id):
+    """Aprova um comentário pendente."""
+    if not session.get('admin_logged'):
+        return redirect(url_for('relatos.admin_login'))
+
+    comentario = Comentario.query.get_or_404(comentario_id)
+
+    if comentario.status == 'pendente':
+        comentario.status = 'aprovado'
+        db.session.commit()
+        flash(f'Comentário de "{comentario.autor}" aprovado com sucesso!', 'success')
+
+    return redirect(url_for('relatos.admin_pendentes'))
+
+
+@relatos_bp.route('/admin/comentarios/rejeitar/<int:comentario_id>')
+def rejeitar_comentario(comentario_id):
+    """Rejeita um comentário pendente."""
+    if not session.get('admin_logged'):
+        return redirect(url_for('relatos.admin_login'))
+
+    comentario = Comentario.query.get_or_404(comentario_id)
+    comentario.status = 'rejeitado'
+    db.session.commit()
+    flash(f'Comentário de "{comentario.autor}" rejeitado.', 'warning')
+
     return redirect(url_for('relatos.admin_pendentes'))
 
 
