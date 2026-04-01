@@ -170,7 +170,7 @@
                                     </div>
                                     
                                     <div class="flex justify-end">
-                                        <a href="{{ url_for('main.ver_post', post_id=post.id) }}"
+                                            <a href="{{ url_for('main.ver_post', post_id=post.id) }}"
                                            class="text-dream-purple hover:text-dream-purple-light transition">
                                             Ler mais <i class="bi bi-arrow-right"></i>
                                         </a>
@@ -270,7 +270,7 @@
                             <div class="flex gap-3 items-start">
                                 <div class="text-dream-purple font-orbitron text-sm">{{ loop.index }}.</div>
                                 <div>
-                                    <a href="{{ url_for('ver_post', post_id=post.id) }}" class="text-white hover:text-dream-purple transition">
+                                    <a href="{{ url_for('main.ver_post', post_id=post.id) }}" class="text-white hover:text-dream-purple transition">
                                         {{ post.titulo }}
                                     </a>
                                     <div class="text-gray-500 text-xs">{{ post.visualizacoes }} views</div>
