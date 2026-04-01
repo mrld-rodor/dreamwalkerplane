@@ -16,8 +16,8 @@ window.dashboardData = {
     comentarios_aprovados: {{ comentarios_aprovados|default(0) }},
     comentarios_pendentes: {{ comentarios_pendentes|default(0) }},
     comentarios_rejeitados: {{ comentarios_rejeitados|default(0) }},
-    visitas_labels: {{ visitas|map(attribute='data')|list|tojson }},
-    visitas_data: {{ visitas|map(attribute='qtd')|list|tojson }},
+    visitas_labels: {{ visitas_labels|tojson }},
+    visitas_data: {{ visitas_data|tojson }},
     paises: {{ paises|tojson }}
 };
 </script>

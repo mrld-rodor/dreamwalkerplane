@@ -185,6 +185,7 @@ def status():
 @login_required
 def admin_dashboard():
     """Dashboard administrativo com estatísticas"""
+
     visitantes, downloads, visitas = obter_contadores()
 
     # Estatísticas de relatos
@@ -201,6 +202,17 @@ def admin_dashboard():
     comentarios_pendentes = Comentario.query.filter_by(status='pendente').count()
     comentarios_rejeitados = Comentario.query.filter_by(status='rejeitado').count()
 
+    # Agrupamento de visitas por dia
+    from collections import Counter
+    visitas_por_dia = Counter()
+    for v in visitas:
+        data = v.get('data')
+        if data:
+            dia = data.split(' ')[0]  # só a data, sem hora
+            visitas_por_dia[dia] += 1
+    visitas_labels = sorted(visitas_por_dia.keys())
+    visitas_data = [visitas_por_dia[d] for d in visitas_labels]
+
     # Dados de localização dos visitantes (países)
     paises = set()
     for v in visitas:
@@ -213,6 +225,8 @@ def admin_dashboard():
                           visitantes=visitantes, 
                           downloads=downloads, 
                           visitas=visitas,
+                          visitas_labels=visitas_labels,
+                          visitas_data=visitas_data,
                           total_relatos=total_relatos,
                           relatos_aprovados=relatos_aprovados,
                           relatos_pendentes=relatos_pendentes,
