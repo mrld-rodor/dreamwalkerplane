@@ -186,10 +186,43 @@ def status():
 def admin_dashboard():
     """Dashboard administrativo com estatísticas"""
     visitantes, downloads, visitas = obter_contadores()
+
+    # Estatísticas de relatos
+    from models import Relato, Comentario
+    total_relatos = Relato.query.count()
+    relatos_aprovados = Relato.query.filter_by(status='aprovado').count()
+    relatos_pendentes = Relato.query.filter_by(status='pendente').count()
+    relatos_rejeitados = Relato.query.filter_by(status='rejeitado').count()
+    ultimos_relatos = Relato.query.order_by(Relato.data_envio.desc()).limit(10).all()
+
+    # Estatísticas de comentários
+    total_comentarios = Comentario.query.count()
+    comentarios_aprovados = Comentario.query.filter_by(status='aprovado').count()
+    comentarios_pendentes = Comentario.query.filter_by(status='pendente').count()
+    comentarios_rejeitados = Comentario.query.filter_by(status='rejeitado').count()
+
+    # Dados de localização dos visitantes (países)
+    paises = set()
+    for v in visitas:
+        pais = v.get('pais') or v.get('country')
+        if pais:
+            paises.add(pais)
+    paises = sorted(paises)
+
     return render_template('admin_dashboard.html', 
                           visitantes=visitantes, 
                           downloads=downloads, 
-                          visitas=visitas)
+                          visitas=visitas,
+                          total_relatos=total_relatos,
+                          relatos_aprovados=relatos_aprovados,
+                          relatos_pendentes=relatos_pendentes,
+                          relatos_rejeitados=relatos_rejeitados,
+                          ultimos_relatos=ultimos_relatos,
+                          total_comentarios=total_comentarios,
+                          comentarios_aprovados=comentarios_aprovados,
+                          comentarios_pendentes=comentarios_pendentes,
+                          comentarios_rejeitados=comentarios_rejeitados,
+                          paises=paises)
 
 
 

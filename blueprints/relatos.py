@@ -16,15 +16,28 @@ relatos_bp = Blueprint('relatos', __name__, url_prefix='/relatos')
 @relatos_bp.route('/mural')
 def mural():
     """
-    Mural público - mostra apenas relatos APROVADOS
-    Ordenados do mais recente para o mais antigo
+    Mural público - mostra apenas relatos APROVADOS, agrupados por ano/mês
     """
-    # Busca todos os relatos aprovados
     relatos_aprovados = Relato.query.filter_by(status='aprovado')\
         .order_by(Relato.data_aprovacao.desc())\
         .all()
-    
-    return render_template('mural.html', relatos=relatos_aprovados)
+
+    # Agrupa por ano/mês
+    from collections import defaultdict
+    import calendar
+    posts_por_ano = defaultdict(lambda: defaultdict(list))
+    for relato in relatos_aprovados:
+        ano = relato.data_aprovacao.year if relato.data_aprovacao else relato.data_envio.year
+        mes_num = (relato.data_aprovacao.month if relato.data_aprovacao else relato.data_envio.month)
+        mes_nome = f"{mes_num:02d} - {calendar.month_name[mes_num]}"
+        posts_por_ano[ano][mes_nome].append(relato)
+
+    # Ordena anos e meses
+    posts_por_ano = dict(sorted(posts_por_ano.items(), reverse=True))
+    for ano in posts_por_ano:
+        posts_por_ano[ano] = dict(sorted(posts_por_ano[ano].items(), reverse=True))
+
+    return render_template('mural.html', posts_por_ano=posts_por_ano)
 
 
 @relatos_bp.route('/enviar', methods=['GET', 'POST'])

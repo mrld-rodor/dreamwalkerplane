@@ -2,9 +2,67 @@
 
 {% block title %}Dashboard - Admin{% endblock %}
 
+{% block extra_js %}
+<!-- Chart.js CDN -->
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<!-- Globe.gl CDN -->
+<script src="https://unpkg.com/three@0.150.1/build/three.min.js"></script>
+<script src="https://unpkg.com/globe.gl"></script>
+<script>
+window.dashboardData = {
+    relatos_aprovados: {{ relatos_aprovados|default(0) }},
+    relatos_pendentes: {{ relatos_pendentes|default(0) }},
+    relatos_rejeitados: {{ relatos_rejeitados|default(0) }},
+    comentarios_aprovados: {{ comentarios_aprovados|default(0) }},
+    comentarios_pendentes: {{ comentarios_pendentes|default(0) }},
+    comentarios_rejeitados: {{ comentarios_rejeitados|default(0) }},
+    visitas_labels: {{ visitas|map(attribute='data')|list|tojson }},
+    visitas_data: {{ visitas|map(attribute='qtd')|list|tojson }},
+    paises: {{ paises|tojson }}
+};
+</script>
+<script src="{{ url_for('static', filename='js/dashboard_charts.js') }}"></script>
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    if (window.dashboardData.paises && window.dashboardData.paises.length && document.getElementById('globoVisitantes')) {
+        // Países → coordenadas aproximadas (centro do país)
+        const countryCoords = {
+            'Brasil': {lat: -14.2350, lng: -51.9253},
+            'Portugal': {lat: 39.3999, lng: -8.2245},
+            'United States': {lat: 37.0902, lng: -95.7129},
+            'France': {lat: 46.6034, lng: 1.8883},
+            'Germany': {lat: 51.1657, lng: 10.4515},
+            'Spain': {lat: 40.4637, lng: -3.7492},
+            'Italy': {lat: 41.8719, lng: 12.5674},
+            'United Kingdom': {lat: 55.3781, lng: -3.4360},
+            'Japan': {lat: 36.2048, lng: 138.2529},
+            'India': {lat: 20.5937, lng: 78.9629},
+            'Argentina': {lat: -38.4161, lng: -63.6167},
+            'Mexico': {lat: 23.6345, lng: -102.5528},
+            // ...adicione mais se necessário
+        };
+        const markers = window.dashboardData.paises.map(pais => {
+            const coords = countryCoords[pais] || {lat: 0, lng: 0};
+            return { lat: coords.lat, lng: coords.lng, size: 0.5, color: '#22d3ee', country: pais };
+        });
+        const globe = Globe()
+            .globeImageUrl('https://unpkg.com/three-globe/example/img/earth-dark.jpg')
+            .pointOfView({lat: 0, lng: 0, altitude: 2})
+            .pointsData(markers)
+            .pointLat('lat')
+            .pointLng('lng')
+            .pointColor('color')
+            .pointAltitude('size')
+            .pointLabel('country');
+        globe(document.getElementById('globoVisitantes'));
+    }
+});
+</script>
+{% endblock %}
+
 {% block content %}
 <div class="bg-black min-h-screen py-12">
-    <div class="container mx-auto px-4 max-w-6xl">
+    <div class="container mx-auto px-4 max-w-7xl">
         
         <div class="flex justify-between items-center mb-8 flex-wrap gap-4">
             <h1 class="text-2xl md:text-3xl font-orbitron text-white"><i class="bi bi-speedometer2 mr-2"></i> <span data-lang="dashboard">Dashboard</span></h1>
@@ -15,13 +73,42 @@
             </div>
         </div>
         
-        <div class="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
+        <div class="grid grid-cols-1 md:grid-cols-8 gap-6 mb-8">
+            <div class="border border-gray-800 p-6 text-center"><i class="bi bi-people text-3xl text-blue-400 mb-2"></i><p class="text-gray-400">Visitantes</p><p class="text-3xl font-orbitron text-blue-400">{{ visitantes }}</p></div>
+            <div class="border border-gray-800 p-6 text-center"><i class="bi bi-download text-3xl text-purple-400 mb-2"></i><p class="text-gray-400">Downloads</p><p class="text-3xl font-orbitron text-purple-400">{{ downloads }}</p></div>
             <div class="border border-gray-800 p-6 text-center"><i class="bi bi-chat-dots text-3xl text-white mb-2"></i><p class="text-gray-400" data-lang="total_relatos">Total Relatos</p><p class="text-3xl font-orbitron text-white">{{ total_relatos }}</p></div>
-            <div class="border border-gray-800 p-6 text-center"><i class="bi bi-clock-history text-3xl text-yellow-400 mb-2"></i><p class="text-gray-400" data-lang="pendentes">Pendentes</p><p class="text-3xl font-orbitron text-yellow-400">{{ pendentes }}</p></div>
-            <div class="border border-gray-800 p-6 text-center"><i class="bi bi-check-circle text-3xl text-green-400 mb-2"></i><p class="text-gray-400" data-lang="aprovados">Aprovados</p><p class="text-3xl font-orbitron text-green-400">{{ aprovados }}</p></div>
-            <div class="border border-gray-800 p-6 text-center"><i class="bi bi-x-circle text-3xl text-red-400 mb-2"></i><p class="text-gray-400" data-lang="rejeitados">Rejeitados</p><p class="text-3xl font-orbitron text-red-400">{{ rejeitados }}</p></div>
+            <div class="border border-gray-800 p-6 text-center"><i class="bi bi-clock-history text-3xl text-yellow-400 mb-2"></i><p class="text-gray-400" data-lang="pendentes">Pendentes</p><p class="text-3xl font-orbitron text-yellow-400">{{ relatos_pendentes }}</p></div>
+            <div class="border border-gray-800 p-6 text-center"><i class="bi bi-check-circle text-3xl text-green-400 mb-2"></i><p class="text-gray-400" data-lang="aprovados">Aprovados</p><p class="text-3xl font-orbitron text-green-400">{{ relatos_aprovados }}</p></div>
+            <div class="border border-gray-800 p-6 text-center"><i class="bi bi-x-circle text-3xl text-red-400 mb-2"></i><p class="text-gray-400" data-lang="rejeitados">Rejeitados</p><p class="text-3xl font-orbitron text-red-400">{{ relatos_rejeitados }}</p></div>
+            <div class="border border-gray-800 p-6 text-center"><i class="bi bi-chat-left-text text-3xl text-cyan-400 mb-2"></i><p class="text-gray-400">Comentários</p><p class="text-3xl font-orbitron text-cyan-400">{{ total_comentarios }}</p></div>
+            <div class="border border-gray-800 p-6 text-center"><i class="bi bi-chat-left-dots text-3xl text-cyan-200 mb-2"></i><p class="text-gray-400">Pendentes</p><p class="text-3xl font-orbitron text-cyan-200">{{ comentarios_pendentes }}</p></div>
+            <div class="border border-gray-800 p-6 text-center"><i class="bi bi-chat-left-check text-3xl text-green-300 mb-2"></i><p class="text-gray-400">Aprovados</p><p class="text-3xl font-orbitron text-green-300">{{ comentarios_aprovados }}</p></div>
+            <div class="border border-gray-800 p-6 text-center"><i class="bi bi-chat-left-x text-3xl text-red-300 mb-2"></i><p class="text-gray-400">Rejeitados</p><p class="text-3xl font-orbitron text-red-300">{{ comentarios_rejeitados }}</p></div>
         </div>
-        
+
+        <!-- GLOBO DE VISITANTES -->
+        <div class="bg-gray-900 rounded-lg p-6 shadow mb-12">
+            <h3 class="text-lg font-orbitron text-white mb-4">Globo de Visitantes</h3>
+            <div id="globoVisitantes" style="width:100%;height:400px;"></div>
+            <div class="text-gray-400 text-xs mt-2">* Pontos indicam países de origem dos visitantes registrados</div>
+        </div>
+
+        <!-- GRÁFICOS PROFISSIONAIS -->
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-8 mb-12">
+            <div class="bg-gray-900 rounded-lg p-6 shadow">
+                <h3 class="text-lg font-orbitron text-white mb-4">Relatos por Status</h3>
+                <canvas id="relatosStatusChart" height="180"></canvas>
+            </div>
+            <div class="bg-gray-900 rounded-lg p-6 shadow">
+                <h3 class="text-lg font-orbitron text-white mb-4">Comentários por Status</h3>
+                <canvas id="comentariosStatusChart" height="180"></canvas>
+            </div>
+            <div class="bg-gray-900 rounded-lg p-6 shadow">
+                <h3 class="text-lg font-orbitron text-white mb-4">Visitantes por Dia</h3>
+                <canvas id="visitantesLineChart" height="180"></canvas>
+            </div>
+        </div>
+
         <div class="border border-gray-800 p-6">
             <h2 class="text-xl font-orbitron text-white mb-4" data-lang="ultimos_relatos">Últimos Relatos</h2>
             <div class="overflow-x-auto">
@@ -31,7 +118,7 @@
                         {% for relato in ultimos_relatos %}
                         <tr class="border-b border-gray-800"><td class="py-2 text-gray-400">{{ relato.data_envio.strftime('%d/%m/%Y %H:%M') }}</td><td class="py-2">{{ relato.autor }}</td><td class="py-2">{{ relato.titulo }}</td>
                         <td class="py-2">{% if relato.status == 'pendente' %}<span class="text-yellow-400" data-lang="status_pendente">Pendente</span>{% elif relato.status == 'aprovado' %}<span class="text-green-400" data-lang="status_aprovado">Aprovado</span>{% else %}<span class="text-red-400" data-lang="status_rejeitado">Rejeitado</span>{% endif %}</td>
-                        <td class="py-2"><a href="{{ url_for('admin.ver_relato', relato_id=relato.id) }}" class="text-gray-400 hover:text-white"><i class="bi bi-eye"></i></a></td></tr>
+                        <td class="py-2"><a href="#" class="text-gray-400 hover:text-white"><i class="bi bi-eye"></i></a></td></tr>
                         {% endfor %}
                     </tbody>
                 </table>
