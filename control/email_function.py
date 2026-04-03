@@ -1,4 +1,5 @@
 import smtplib
+import socket
 import ssl
 import traceback
 from html import escape
@@ -10,6 +11,7 @@ from control.email_config import (
     login,
     mail_port,
     mail_server,
+    mail_timeout,
     mail_use_ssl,
     mail_use_tls,
     senha,
@@ -145,7 +147,9 @@ def send_email(contato):
     try:
         context = ssl.create_default_context()
         smtp_class = smtplib.SMTP_SSL if mail_use_ssl else smtplib.SMTP
-        smtp_kwargs = {'context': context} if mail_use_ssl else {}
+        smtp_kwargs = {'timeout': mail_timeout}
+        if mail_use_ssl:
+            smtp_kwargs['context'] = context
 
         with smtp_class(mail_server, mail_port, **smtp_kwargs) as smtp:
             if mail_use_tls and not mail_use_ssl:
@@ -162,6 +166,10 @@ def send_email(contato):
         raise
     except smtplib.SMTPException as e:
         print(f"[ERROR] SMTP Error: {e}")
+        print(traceback.format_exc())
+        raise
+    except (TimeoutError, socket.timeout, OSError) as e:
+        print(f"[ERROR] Falha de conexao SMTP ({mail_server}:{mail_port}): {e}")
         print(traceback.format_exc())
         raise
     except Exception as e:

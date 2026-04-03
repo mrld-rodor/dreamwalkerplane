@@ -7,6 +7,7 @@ mail_server = os.getenv('MAIL_SERVER', 'smtp.gmail.com')
 mail_port = int(os.getenv('MAIL_PORT', 587))
 mail_use_tls = os.getenv('MAIL_USE_TLS', 'True') == 'True'
 mail_use_ssl = os.getenv('MAIL_USE_SSL', 'False') == 'True'
+mail_timeout = float(os.getenv('MAIL_TIMEOUT', '10'))
 login = os.getenv('EMAIL_LOGIN') or os.getenv('MAIL_USERNAME')
 senha = os.getenv('EMAIL_PASSWORD') or os.getenv('MAIL_PASSWORD')
 email_receiver = os.getenv('EMAIL_RECEIVER')
