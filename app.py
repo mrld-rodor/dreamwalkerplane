@@ -110,18 +110,12 @@ def create_app():
         if not app.db_initialized:
             try:
                 db.create_all()
+                inicializar_contador()
                 print("[INFO] Banco de dados verificado/criado com sucesso!")
                 app.db_initialized = True
             except Exception as e:
                 print(f"[WARN] Banco de dados não disponível: {e}")
                 # Continua mesmo assim - a aplicação pode funcionar com algumas features limitadas
-    
-    # ========== INICIALIZA O CONTADOR ==========
-    try:
-        inicializar_contador()
-    except Exception as e:
-        print(f"[WARN] Contador não pode ser inicializado: {e}")
-        print("[INFO] Tentarei novamente na primeira requisição")
     
     # ========== REGISTRA OS BLUEPRINTS ==========
     app.register_blueprint(main_bp)
