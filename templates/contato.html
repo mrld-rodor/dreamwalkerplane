@@ -3,7 +3,7 @@
     CONTATO.HTML - DreamWalker Plane
     ============================================================================
     Página de contato com formulário e reCAPTCHA
-    Envia email usando as funções existentes em control/email_function.py
+    Envia email via SMTP/Gmail
     ============================================================================
 -->
 
@@ -152,9 +152,11 @@
                 </div>
                 
                 <!-- reCAPTCHA -->
+                {% if contact_recaptcha_site_key %}
                 <div class="flex justify-center mb-6">
                     <div class="g-recaptcha" data-sitekey="{{ contact_recaptcha_site_key }}"></div>
                 </div>
+                {% endif %}
                 
                 <!-- Botões -->
                 <div class="flex justify-center gap-4">
@@ -206,8 +208,9 @@
 {% endblock %}
 
 {% block extra_js %}
-<!-- reCAPTCHA API -->
+{% if contact_recaptcha_site_key %}
 <script src="https://www.google.com/recaptcha/api.js" async defer></script>
+{% endif %}
 
 <script>
     // Contador de caracteres para a mensagem

@@ -84,9 +84,11 @@
                 </div>
                 
                 <!-- reCAPTCHA -->
+                {% if relato_recaptcha_site_key %}
                 <div class="mb-6 flex justify-center">
                     <div class="g-recaptcha" data-sitekey="{{ relato_recaptcha_site_key or '' }}"></div>
                 </div>
+                {% endif %}
                 
                 <!-- Botões -->
                 <div class="flex flex-col sm:flex-row gap-4 mt-8">
@@ -121,8 +123,9 @@
 {% endblock %}
 
 {% block extra_js %}
-<!-- Script do reCAPTCHA -->
+{% if relato_recaptcha_site_key %}
 <script src="https://www.google.com/recaptcha/api.js" async defer></script>
+{% endif %}
 
 <script>
     // Contador de caracteres (opcional)

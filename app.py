@@ -25,7 +25,7 @@ def create_app():
     """Factory da aplicação Flask"""
     
     app = Flask(__name__)
-    
+
     # ========== CONFIGURAÇÕES ==========
     # Segurança
     app.config['SECRET_KEY'] = os.getenv('SECRET_KEY')
@@ -61,10 +61,11 @@ def create_app():
         'connect_args': connect_args
     }
 
-    # Email
+    # Email via SMTP/Gmail
     app.config['MAIL_SERVER'] = os.getenv('MAIL_SERVER', 'smtp.gmail.com')
     app.config['MAIL_PORT'] = int(os.getenv('MAIL_PORT', 587))
     app.config['MAIL_USE_TLS'] = os.getenv('MAIL_USE_TLS', 'True') == 'True'
+    app.config['MAIL_USE_SSL'] = os.getenv('MAIL_USE_SSL', 'False') == 'True'
     app.config['MAIL_USERNAME'] = os.getenv('EMAIL_LOGIN')
     app.config['MAIL_PASSWORD'] = os.getenv('EMAIL_PASSWORD')
     

@@ -3,7 +3,6 @@ blueprints/contato.py - Sistema de Contato com envio de email
 """
 
 from flask import Blueprint, render_template, request, redirect, url_for, flash, current_app
-import os
 from control.recaptcha import verify_recaptcha
 
 
@@ -79,16 +78,16 @@ def contato():
                 contact_recaptcha_site_key=current_app.config.get('CONTACT_RECAPTCHA_SITE_KEY')
             )
         
-        # 5. Envia email usando SendGrid
+        # 5. Envia email usando SMTP
         try:
-            from control.sendgrid_email import send_email
+            from control.email_function import send_email
             contato = Contato(nome, email, mensagem)  # ← usa a classe definida acima
             send_email(contato)
             flash('Mensagem enviada com sucesso! Entrarei em contato em breve.', 'success')
             return redirect(url_for('contato.contato'))
             
-        except Exception as e:
-            current_app.logger.error(f'Erro ao enviar email: {str(e)}')
+        except Exception:
+            current_app.logger.exception('Erro ao enviar email')
             flash('Erro ao enviar mensagem. Tente novamente mais tarde.', 'danger')
             return render_template(
                 'contato.html',
