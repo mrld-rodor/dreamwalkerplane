@@ -80,12 +80,31 @@ def contato():
         
         # 5. Envia email usando SMTP
         try:
-            from control.email_function import send_email
+            from control.email_function import EmailDeliveryError, EmailNetworkError, send_email
             contato = Contato(nome, email, mensagem)  # ← usa a classe definida acima
             send_email(contato)
             flash('Mensagem enviada com sucesso! Entrarei em contato em breve.', 'success')
             return redirect(url_for('contato.contato'))
-            
+        except EmailNetworkError:
+            current_app.logger.warning('SMTP indisponivel ou sem rota de rede para o provedor configurado')
+            flash('O formulario foi recebido, mas o servico de email esta temporariamente indisponivel. Tente novamente mais tarde.', 'warning')
+            return render_template(
+                'contato.html',
+                nome=nome,
+                email=email,
+                mensagem=mensagem,
+                contact_recaptcha_site_key=current_app.config.get('CONTACT_RECAPTCHA_SITE_KEY')
+            )
+        except EmailDeliveryError:
+            current_app.logger.exception('Falha de entrega de email')
+            flash('Nao foi possivel enviar sua mensagem por email no momento. Tente novamente mais tarde.', 'danger')
+            return render_template(
+                'contato.html',
+                nome=nome,
+                email=email,
+                mensagem=mensagem,
+                contact_recaptcha_site_key=current_app.config.get('CONTACT_RECAPTCHA_SITE_KEY')
+            )
         except Exception:
             current_app.logger.exception('Erro ao enviar email')
             flash('Erro ao enviar mensagem. Tente novamente mais tarde.', 'danger')

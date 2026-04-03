@@ -61,13 +61,11 @@ def create_app():
         'connect_args': connect_args
     }
 
-    # Email via SMTP/Gmail
-    app.config['MAIL_SERVER'] = os.getenv('MAIL_SERVER', 'smtp.gmail.com')
-    app.config['MAIL_PORT'] = int(os.getenv('MAIL_PORT', 587))
-    app.config['MAIL_USE_TLS'] = os.getenv('MAIL_USE_TLS', 'True') == 'True'
-    app.config['MAIL_USE_SSL'] = os.getenv('MAIL_USE_SSL', 'False') == 'True'
-    app.config['MAIL_USERNAME'] = os.getenv('EMAIL_LOGIN')
-    app.config['MAIL_PASSWORD'] = os.getenv('EMAIL_PASSWORD')
+    # Email via API HTTP (ex.: Resend)
+    app.config['EMAIL_API_URL'] = os.getenv('EMAIL_API_URL', 'https://api.resend.com/emails')
+    app.config['EMAIL_API_TIMEOUT'] = float(os.getenv('EMAIL_API_TIMEOUT', '10'))
+    app.config['EMAIL_SENDER'] = os.getenv('EMAIL_SENDER')
+    app.config['EMAIL_RECEIVER'] = os.getenv('EMAIL_RECEIVER')
     
     # reCAPTCHA
     app.config['RECAPTCHA_SITE_KEY'] = os.getenv('RECAPTCHA_SITE_KEY')

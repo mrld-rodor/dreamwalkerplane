@@ -1,21 +1,23 @@
-import smtplib
-import socket
-import ssl
 import traceback
 from html import escape
-from pathlib import Path
-from email.message import EmailMessage
+
+import requests
 
 from control.email_config import (
+    email_api_key,
+    email_api_timeout,
+    email_api_url,
     email_receiver,
-    login,
-    mail_port,
-    mail_server,
-    mail_timeout,
-    mail_use_ssl,
-    mail_use_tls,
-    senha,
+    email_sender,
 )
+
+
+class EmailDeliveryError(Exception):
+    """Erro base para falhas no envio de email."""
+
+
+class EmailNetworkError(EmailDeliveryError):
+    """Falha de conectividade com o servidor SMTP."""
 
 
 class Contato:
@@ -37,18 +39,10 @@ Mensagem:
 """.strip()
 
 
-def _build_html_email(contato, logo_cid=None):
+def _build_html_email(contato):
     nome = escape(contato.nome)
     email = escape(contato.email)
     mensagem = escape(contato.mensagem).replace('\n', '<br>')
-    logo_html = ''
-
-    if logo_cid:
-        logo_html = f"""
-        <div style="text-align:center; margin: 8px 0 24px;">
-            <img src="cid:{logo_cid}" alt="DreamWalker Plane" style="width: 110px; max-width: 110px; height: auto; display: inline-block; filter: drop-shadow(0 0 16px rgba(255,255,255,0.18));">
-        </div>
-        """
 
     return f"""
 <!DOCTYPE html>
@@ -74,8 +68,6 @@ def _build_html_email(contato, logo_cid=None):
                         </div>
 
                         <div style="padding: 30px 28px 8px;">
-                            {logo_html}
-
                             <div style="background: linear-gradient(180deg, rgba(255,255,255,0.05) 0%, rgba(255,255,255,0.02) 100%); border:1px solid #2c2c2c; padding: 22px; margin-bottom: 18px;">
                                 <div style="color:#8f8f8f; text-transform:uppercase; letter-spacing:0.22em; font-size:11px; margin-bottom:8px;">Remetente</div>
                                 <div style="font-size:24px; color:#ffffff; font-family:'Orbitron', 'Arial Black', sans-serif; margin-bottom:6px;">{nome}</div>
@@ -109,70 +101,60 @@ def _build_html_email(contato, logo_cid=None):
 """.strip()
 
 
-def _attach_logo(message, logo_cid):
-    logo_path = Path(__file__).resolve().parent.parent / 'static' / 'images' / 'amiraldo_logo_transparent_white.png'
-    if not logo_path.exists():
-        return False
-
-    with logo_path.open('rb') as logo_file:
-        logo_data = logo_file.read()
-
-    message.get_payload()[-1].add_related(
-        logo_data,
-        maintype='image',
-        subtype='png',
-        cid=f'<{logo_cid}>',
-        filename='dreamwalker-logo.png'
-    )
-    return True
-
-
 def send_email(contato):
-    msg = EmailMessage()
-    msg['Subject'] = f'Visitante do DreamWalker Plane - {contato.nome}'
-    msg['From'] = login
-    msg['To'] = email_receiver
-    msg['Reply-To'] = contato.email
+    html_body = _build_html_email(contato)
+    text_body = _build_plain_text(contato)
 
-    logo_cid = 'dreamwalker-logo'
-    msg.set_content(_build_plain_text(contato))
-    msg.add_alternative(_build_html_email(contato, logo_cid=logo_cid), subtype='html')
-    has_logo = _attach_logo(msg, logo_cid)
-
-    if not has_logo:
-        msg.clear_content()
-        msg.set_content(_build_plain_text(contato))
-        msg.add_alternative(_build_html_email(contato, logo_cid=None), subtype='html')
+    if not email_api_key or not email_sender or not email_receiver:
+        missing = []
+        if not email_api_key:
+            missing.append('RESEND_API_KEY')
+        if not email_sender:
+            missing.append('EMAIL_SENDER')
+        if not email_receiver:
+            missing.append('EMAIL_RECEIVER')
+        raise EmailDeliveryError(
+            f"Configuracao de email incompleta: {', '.join(missing)}"
+        )
 
     try:
-        context = ssl.create_default_context()
-        smtp_class = smtplib.SMTP_SSL if mail_use_ssl else smtplib.SMTP
-        smtp_kwargs = {'timeout': mail_timeout}
-        if mail_use_ssl:
-            smtp_kwargs['context'] = context
+        payload = {
+            'from': email_sender,
+            'to': [email_receiver],
+            'subject': f'Visitante do DreamWalker Plane - {contato.nome}',
+            'reply_to': contato.email,
+            'html': html_body,
+            'text': text_body,
+        }
 
-        with smtp_class(mail_server, mail_port, **smtp_kwargs) as smtp:
-            if mail_use_tls and not mail_use_ssl:
-                smtp.ehlo()
-                smtp.starttls(context=context)
-                smtp.ehlo()
-            smtp.login(login, senha)
-            smtp.send_message(msg)
-        print(f"[INFO] Email enviado com sucesso via SMTP ({mail_server}:{mail_port}).")
+        response = requests.post(
+            email_api_url,
+            headers={
+                'Authorization': f'Bearer {email_api_key}',
+                'Content-Type': 'application/json',
+            },
+            json=payload,
+            timeout=email_api_timeout,
+        )
+        response.raise_for_status()
+        print('[INFO] Email enviado com sucesso via API HTTP.')
         return 202
-    except smtplib.SMTPAuthenticationError as e:
-        print(f"[ERROR] SMTP Authentication Error: {e}")
+    except requests.exceptions.Timeout as e:
+        print(f"[ERROR] Timeout ao enviar email via API HTTP: {e}")
         print(traceback.format_exc())
-        raise
-    except smtplib.SMTPException as e:
-        print(f"[ERROR] SMTP Error: {e}")
+        raise EmailNetworkError('Timeout na comunicacao com o provedor de email') from e
+    except requests.exceptions.ConnectionError as e:
+        print(f"[ERROR] Falha de conexao com a API de email: {e}")
         print(traceback.format_exc())
-        raise
-    except (TimeoutError, socket.timeout, OSError) as e:
-        print(f"[ERROR] Falha de conexao SMTP ({mail_server}:{mail_port}): {e}")
+        raise EmailNetworkError('Provedor de email indisponivel ou inacessivel') from e
+    except requests.exceptions.HTTPError as e:
+        response_body = ''
+        if e.response is not None:
+            response_body = e.response.text
+        print(f"[ERROR] API de email retornou erro HTTP: {response_body}")
         print(traceback.format_exc())
-        raise
+        raise EmailDeliveryError('Provedor de email rejeitou a solicitacao') from e
     except Exception as e:
         print(f"[ERROR] Erro ao enviar e-mail: {e}")
         print(traceback.format_exc())
-        raise
+        raise EmailDeliveryError("Erro inesperado ao enviar email") from e
