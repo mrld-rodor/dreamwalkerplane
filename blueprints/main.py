@@ -9,9 +9,11 @@ from functools import wraps
 import os
 import random
 from datetime import datetime
-from collections import defaultdict
 from models import Relato, Comentario, db
 from control.recaptcha import verify_recaptcha
+from control.limiter import limiter
+from control.email_function import EmailDeliveryError, EmailNetworkError
+from control.sendgrid_email import send_comment_notification_email
 
 # Cria o Blueprint
 main_bp = Blueprint('main', __name__)
@@ -275,64 +277,7 @@ def admin_delete_comentario(comentario_id):
 
 @main_bp.route('/mural')
 def mural():
-    # Buscar posts aprovados
-    query = Relato.query.filter_by(status='aprovado')
-    
-    # Filtro de busca
-    busca = request.args.get('q', '')
-    if busca:
-        query = query.filter(
-            Relato.titulo.contains(busca) | Relato.conteudo.contains(busca)
-        )
-    
-    # Filtro por ano/mês
-    ano = request.args.get('ano')
-    mes = request.args.get('mes')
-    if ano:
-        query = query.filter(db.extract('year', Relato.data_aprovacao) == int(ano))
-    if mes:
-        query = query.filter(db.extract('month', Relato.data_aprovacao) == int(mes))
-    
-    # Paginação (10 posts por página)
-    page = request.args.get('page', 1, type=int)
-    pagination = query.order_by(Relato.data_aprovacao.desc()).paginate(page=page, per_page=10, error_out=False)
-    posts = pagination.items
-    
-    # Organizar posts por ano/mês para o sidebar
-    posts_por_ano = defaultdict(lambda: defaultdict(list))
-    for post in posts:
-        ano_post = post.data_aprovacao.year
-        mes_post = post.data_aprovacao.strftime('%B')
-        posts_por_ano[ano_post][mes_post].append(post)
-    
-    # Arquivo por ano/mês (sidebar)
-    arquivo_anos = []
-    for ano in sorted(set(db.session.query(db.extract('year', Relato.data_aprovacao)).filter_by(status='aprovado').all()), reverse=True):
-        ano_val = ano[0]
-        if ano_val:
-            meses_ano = {}
-            for post in Relato.query.filter_by(status='aprovado').filter(db.extract('year', Relato.data_aprovacao) == ano_val).all():
-                mes_num = post.data_aprovacao.month
-                mes_nome = post.data_aprovacao.strftime('%B')
-                if mes_num not in meses_ano:
-                    meses_ano[mes_num] = {'numero': mes_num, 'nome': mes_nome, 'total': 0}
-                meses_ano[mes_num]['total'] += 1
-            
-            arquivo_anos.append({
-                'ano': ano_val,
-                'total': Relato.query.filter_by(status='aprovado').filter(db.extract('year', Relato.data_aprovacao) == ano_val).count(),
-                'meses': list(meses_ano.values())
-            })
-    
-    # Posts populares (mais visualizados)
-    posts_populares = Relato.query.filter_by(status='aprovado').order_by(Relato.visualizacoes.desc()).limit(5).all()
-    
-    return render_template('mural.html',
-                          posts_por_ano=dict(posts_por_ano),
-                          arquivo_anos=arquivo_anos,
-                          posts_populares=posts_populares,
-                          paginacao=pagination,
-                          busca=busca)
+    return redirect(url_for('relatos.mural', **request.args), code=302)
 
 
 @main_bp.route('/post/<int:post_id>')
@@ -369,6 +314,7 @@ def ver_post(post_id):
 
 
 @main_bp.route('/post/<int:post_id>/comentar', methods=['POST'])
+@limiter.limit('5 per hour')
 def comentar(post_id):
     autor = request.form.get('autor', '').strip()
     email = request.form.get('email', '').strip()
@@ -412,6 +358,15 @@ def comentar(post_id):
     
     db.session.add(comentario)
     db.session.commit()
+
+    try:
+        send_comment_notification_email(comentario)
+    except (EmailDeliveryError, EmailNetworkError) as notification_error:
+        current_app.logger.warning(
+            'Comentario salvo, mas a notificacao ao admin falhou: %s',
+            notification_error,
+        )
+
     session.pop('comment_captcha_answer', None)
     
     flash('Comentário enviado! Aguarde aprovação.', 'success')

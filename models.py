@@ -37,6 +37,7 @@ class Relato(db.Model):
     
     id = db.Column(db.Integer, primary_key=True)
     autor = db.Column(db.String(100), nullable=False)
+    email = db.Column(db.String(100), nullable=True)
     titulo = db.Column(db.String(200), nullable=False)
     conteudo = db.Column(db.Text, nullable=False)
     status = db.Column(db.String(20), default='pendente')  # pendente, aprovado, rejeitado
@@ -62,6 +63,7 @@ class Relato(db.Model):
         return {
             'id': self.id,
             'autor': self.autor,
+            'email': self.email,
             'titulo': self.titulo,
             'conteudo': self.conteudo,
             'data_envio': self.data_envio.strftime('%d/%m/%Y %H:%M') if self.data_envio else None,

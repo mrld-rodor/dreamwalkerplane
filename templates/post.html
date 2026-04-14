@@ -40,7 +40,7 @@
         
         <!-- Navegação -->
         <div class="mb-6">
-            <a href="{{ url_for('main.mural') }}" class="text-dream-purple hover:text-dream-purple-light transition">
+            <a href="{{ url_for('relatos.mural') }}" class="text-dream-purple hover:text-dream-purple-light transition">
                 <i class="bi bi-arrow-left"></i> Voltar para o Mural
             </a>
         </div>
@@ -107,6 +107,9 @@
                         <input type="email" name="email" placeholder="Seu email (opcional)"
                                class="bg-gray-800 border border-gray-700 rounded-lg px-4 py-2 text-white focus:outline-none focus:border-dream-purple">
                     </div>
+                    <p class="text-gray-500 text-xs mb-4">
+                        <i class="bi bi-info-circle"></i> Se voce preencher o email, enviaremos um aviso quando seu comentario for aprovado ou rejeitado.
+                    </p>
                     <textarea name="conteudo" rows="4" placeholder="Escreva seu comentário..." required
                               class="w-full bg-gray-800 border border-gray-700 rounded-lg px-4 py-2 text-white focus:outline-none focus:border-dream-purple mb-4"></textarea>
                         {% if comment_recaptcha_site_key %}

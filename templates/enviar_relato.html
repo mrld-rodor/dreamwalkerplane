@@ -52,6 +52,21 @@
                            class="w-full bg-dream-gray border border-dream-purple/50 rounded-lg px-4 py-3 text-white focus:outline-none focus:border-dream-purple focus:ring-1 focus:ring-dream-purple transition"
                            placeholder="Como você gostaria de ser chamado?">
                 </div>
+
+                <div class="mb-6">
+                    <label for="email" class="block text-white font-orbitron mb-2">
+                        <i class="bi bi-envelope mr-2"></i> Seu email
+                    </label>
+                    <input type="email"
+                           id="email"
+                           name="email"
+                           value="{{ email or '' }}"
+                           class="w-full bg-dream-gray border border-dream-purple/50 rounded-lg px-4 py-3 text-white focus:outline-none focus:border-dream-purple focus:ring-1 focus:ring-dream-purple transition"
+                           placeholder="Seu email para receber o aviso de aprovação ou rejeição (opcional)">
+                    <p class="text-gray-500 text-xs mt-2">
+                        <i class="bi bi-info-circle"></i> Usaremos esse email apenas para avisar o status da moderação do seu relato.
+                    </p>
+                </div>
                 
                 <!-- Campo: Título -->
                 <div class="mb-6">

@@ -200,7 +200,7 @@
                 {% if paginacao and paginacao.pages > 1 %}
                 <div class="flex justify-center gap-2 mt-8">
                     {% if paginacao.has_prev %}
-                    <a href="{{ url_for('main.mural', page=paginacao.prev_num) }}" class="bg-dream-purple/20 hover:bg-dream-purple text-white px-4 py-2 rounded-lg transition">« Anterior</a>
+                    <a href="{{ url_for('relatos.mural', page=paginacao.prev_num, q=busca, ano=request.args.get('ano'), mes=request.args.get('mes')) }}" class="bg-dream-purple/20 hover:bg-dream-purple text-white px-4 py-2 rounded-lg transition">« Anterior</a>
                     {% endif %}
                     
                     <span class="px-4 py-2 bg-dream-purple/20 text-white rounded-lg">
@@ -208,7 +208,7 @@
                     </span>
                     
                     {% if paginacao.has_next %}
-                    <a href="{{ url_for('main.mural', page=paginacao.next_num) }}" class="bg-dream-purple/20 hover:bg-dream-purple text-white px-4 py-2 rounded-lg transition">Próxima »</a>
+                    <a href="{{ url_for('relatos.mural', page=paginacao.next_num, q=busca, ano=request.args.get('ano'), mes=request.args.get('mes')) }}" class="bg-dream-purple/20 hover:bg-dream-purple text-white px-4 py-2 rounded-lg transition">Próxima »</a>
                     {% endif %}
                 </div>
                 {% endif %}
@@ -224,7 +224,7 @@
                         <h3 class="text-xl font-orbitron text-white mb-4">
                             <i class="bi bi-search mr-2"></i> Buscar
                         </h3>
-                        <form action="{{ url_for('main.mural') }}" method="GET" class="flex gap-2">
+                        <form action="{{ url_for('relatos.mural') }}" method="GET" class="flex gap-2">
                             <input type="text" name="q" placeholder="Buscar relatos..." 
                                    value="{{ busca }}"
                                    class="flex-1 bg-gray-800 search-input rounded-lg px-4 py-2 text-white focus:outline-none">
@@ -249,7 +249,7 @@
                                 <div id="ano-{{ ano.ano }}" class="archive-year-content hidden pl-4 mt-1 space-y-1">
                                     {% for mes in ano.meses %}
                                     <div class="archive-month">
-                                        <a href="{{ url_for('main.mural', ano=ano.ano, mes=mes.numero) }}" class="text-gray-400 hover:text-dream-purple text-sm">
+                                        <a href="{{ url_for('relatos.mural', ano=ano.ano, mes=mes.numero) }}" class="text-gray-400 hover:text-dream-purple text-sm">
                                             {{ mes.nome }} ({{ mes.total }})
                                         </a>
                                     </div>

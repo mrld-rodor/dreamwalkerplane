@@ -4,6 +4,7 @@ blueprints/contato.py - Sistema de Contato com envio de email
 
 from flask import Blueprint, render_template, request, redirect, url_for, flash, current_app
 from control.recaptcha import verify_recaptcha
+from control.limiter import limiter
 
 
 # =====================================================
@@ -22,6 +23,7 @@ contato_bp = Blueprint('contato', __name__, url_prefix='/contato')
 
 
 @contato_bp.route('/', methods=['GET', 'POST'])
+@limiter.limit('5 per hour', methods=['POST'])
 def contato():
     """
     Página de contato com formulário

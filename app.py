@@ -4,8 +4,9 @@ Arquivo principal que inicializa a aplicação Flask
 """
 
 import os
-from flask import Flask
+from flask import Flask, flash, redirect, request, url_for
 from dotenv import load_dotenv
+from sqlalchemy import text
 
 # Carrega variáveis de ambiente
 load_dotenv()
@@ -13,6 +14,7 @@ load_dotenv()
 # Importa as extensões
 from models import db
 from control.contador import inicializar_contador, obter_contadores  
+from control.limiter import limiter
 
 # Importa os Blueprints
 from blueprints.main import main_bp
@@ -99,6 +101,14 @@ def create_app():
     
     # ========== INICIALIZA EXTENSÕES ==========
     db.init_app(app)
+    limiter.init_app(app)
+
+    @app.errorhandler(429)
+    def ratelimit_handler(error):
+        if request.method == 'POST':
+            flash('Voce atingiu o limite de 5 envios por hora para este IP. Tente novamente mais tarde.', 'warning')
+            return redirect(request.referrer or url_for('main.index'))
+        return 'Muitas requisicoes. Tente novamente mais tarde.', 429
     
     # ========== CRIA TABELAS SE NÃO EXISTIREM (lazy - na primeira requisição) ==========
     app.db_initialized = False
@@ -108,10 +118,15 @@ def create_app():
         if not app.db_initialized:
             try:
                 db.create_all()
+                db.session.execute(
+                    text('ALTER TABLE relatos ADD COLUMN IF NOT EXISTS email VARCHAR(100)')
+                )
+                db.session.commit()
                 inicializar_contador()
                 print("[INFO] Banco de dados verificado/criado com sucesso!")
                 app.db_initialized = True
             except Exception as e:
+                db.session.rollback()
                 print(f"[WARN] Banco de dados não disponível: {e}")
                 # Continua mesmo assim - a aplicação pode funcionar com algumas features limitadas
     

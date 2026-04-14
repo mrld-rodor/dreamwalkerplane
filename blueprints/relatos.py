@@ -8,40 +8,30 @@ from models import db, Relato, Comentario
 from datetime import datetime
 import bleach
 import requests
+import re
+from control.mural_context import build_mural_context
 from control.recaptcha import verify_recaptcha
+from control.limiter import limiter
+from control.email_function import EmailDeliveryError, EmailNetworkError
+from control.sendgrid_email import (
+    send_notification_email,
+    send_user_status_notification_email,
+)
 
 # Cria o Blueprint com prefixo /relatos
 relatos_bp = Blueprint('relatos', __name__, url_prefix='/relatos')
 
+EMAIL_REGEX = re.compile(r'^[^@\s]+@[^@\s]+\.[^@\s]+$')
+
 
 @relatos_bp.route('/mural')
 def mural():
-    """
-    Mural público - mostra apenas relatos APROVADOS, agrupados por ano/mês
-    """
-    relatos_aprovados = Relato.query.filter_by(status='aprovado')\
-        .order_by(Relato.data_aprovacao.desc())\
-        .all()
-
-    # Agrupa por ano/mês
-    from collections import defaultdict
-    import calendar
-    posts_por_ano = defaultdict(lambda: defaultdict(list))
-    for relato in relatos_aprovados:
-        ano = relato.data_aprovacao.year if relato.data_aprovacao else relato.data_envio.year
-        mes_num = (relato.data_aprovacao.month if relato.data_aprovacao else relato.data_envio.month)
-        mes_nome = f"{mes_num:02d} - {calendar.month_name[mes_num]}"
-        posts_por_ano[ano][mes_nome].append(relato)
-
-    # Ordena anos e meses
-    posts_por_ano = dict(sorted(posts_por_ano.items(), reverse=True))
-    for ano in posts_por_ano:
-        posts_por_ano[ano] = dict(sorted(posts_por_ano[ano].items(), reverse=True))
-
-    return render_template('mural.html', posts_por_ano=posts_por_ano)
+    """Mural público com busca, arquivo e posts populares."""
+    return render_template('mural.html', **build_mural_context(request.args))
 
 
 @relatos_bp.route('/enviar', methods=['GET', 'POST'])
+@limiter.limit('5 per hour', methods=['POST'])
 def enviar_relato():
     """
     Formulário para envio de relato
@@ -52,6 +42,7 @@ def enviar_relato():
     if request.method == 'POST':
         # 1. Coleta os dados do formulário
         autor = request.form.get('autor', '').strip()
+        email = request.form.get('email', '').strip()
         titulo = request.form.get('titulo', '').strip()
         conteudo = request.form.get('conteudo', '').strip()
         
@@ -62,6 +53,12 @@ def enviar_relato():
             erros.append('Nome é obrigatório')
         elif len(autor) > 100:
             erros.append('Nome muito longo (máximo 100 caracteres)')
+
+        if email:
+            if len(email) > 100:
+                erros.append('Email muito longo (máximo 100 caracteres)')
+            elif not EMAIL_REGEX.match(email):
+                erros.append('Informe um email válido para receber o aviso de moderação')
         
         if not titulo:
             erros.append('Título é obrigatório')
@@ -100,6 +97,7 @@ def enviar_relato():
                 flash(erro, 'danger')
             return render_template('enviar_relato.html', 
                                   autor=autor, 
+                                  email=email,
                                   titulo=titulo, 
                                   conteudo=conteudo,
                                   config=current_app.config,
@@ -110,6 +108,7 @@ def enviar_relato():
         
         novo_relato = Relato(
             autor=autor,
+            email=email if email else None,
             titulo=titulo,
             conteudo=conteudo_sanitizado,
             status='pendente',  # Aguardando aprovação do admin
@@ -119,6 +118,14 @@ def enviar_relato():
         try:
             db.session.add(novo_relato)
             db.session.commit()
+
+            try:
+                send_notification_email(novo_relato)
+            except (EmailDeliveryError, EmailNetworkError) as notification_error:
+                current_app.logger.warning(
+                    'Relato salvo, mas a notificacao ao admin falhou: %s',
+                    notification_error,
+                )
             
             flash('Seu relato foi enviado com sucesso! Aguarde a aprovação para aparecer no mural.', 'success')
             return redirect(url_for('relatos.mural'))
@@ -129,6 +136,7 @@ def enviar_relato():
             flash('Erro ao enviar relato. Tente novamente mais tarde.', 'danger')
             return render_template('enviar_relato.html', 
                                   autor=autor, 
+                                  email=email,
                                   titulo=titulo, 
                                   conteudo=conteudo,
                                   config=current_app.config,
@@ -199,6 +207,16 @@ def aprovar_relato(relato_id):
         relato.status = 'aprovado'
         relato.data_aprovacao = datetime.utcnow()
         db.session.commit()
+
+        if relato.email:
+            try:
+                send_user_status_notification_email(relato=relato, status='aprovado')
+            except (EmailDeliveryError, EmailNetworkError) as notification_error:
+                current_app.logger.warning(
+                    'Relato aprovado, mas o email ao usuario falhou: %s',
+                    notification_error,
+                )
+
         flash(f'Relato "{relato.titulo}" aprovado com sucesso!', 'success')
     
     return redirect(url_for('relatos.admin_pendentes'))
@@ -217,6 +235,16 @@ def rejeitar_relato(relato_id):
     # Opção 1: Marcar como rejeitado e não mostrar
     relato.status = 'rejeitado'
     db.session.commit()
+
+    if relato.email:
+        try:
+            send_user_status_notification_email(relato=relato, status='rejeitado')
+        except (EmailDeliveryError, EmailNetworkError) as notification_error:
+            current_app.logger.warning(
+                'Relato rejeitado, mas o email ao usuario falhou: %s',
+                notification_error,
+            )
+
     flash(f'Relato "{relato.titulo}" rejeitado.', 'warning')
     
     # Opção 2: Excluir permanentemente (descomente se preferir)
@@ -237,6 +265,16 @@ def aprovar_comentario(comentario_id):
     if comentario.status == 'pendente':
         comentario.status = 'aprovado'
         db.session.commit()
+
+        if comentario.email:
+            try:
+                send_user_status_notification_email(comentario=comentario, status='aprovado')
+            except (EmailDeliveryError, EmailNetworkError) as notification_error:
+                current_app.logger.warning(
+                    'Comentario aprovado, mas o email ao usuario falhou: %s',
+                    notification_error,
+                )
+
         flash(f'Comentário de "{comentario.autor}" aprovado com sucesso!', 'success')
 
     return redirect(url_for('relatos.admin_pendentes'))
@@ -251,6 +289,16 @@ def rejeitar_comentario(comentario_id):
     comentario = Comentario.query.get_or_404(comentario_id)
     comentario.status = 'rejeitado'
     db.session.commit()
+
+    if comentario.email:
+        try:
+            send_user_status_notification_email(comentario=comentario, status='rejeitado')
+        except (EmailDeliveryError, EmailNetworkError) as notification_error:
+            current_app.logger.warning(
+                'Comentario rejeitado, mas o email ao usuario falhou: %s',
+                notification_error,
+            )
+
     flash(f'Comentário de "{comentario.autor}" rejeitado.', 'warning')
 
     return redirect(url_for('relatos.admin_pendentes'))

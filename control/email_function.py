@@ -2,6 +2,7 @@ import traceback
 from html import escape
 
 import requests
+from flask import url_for
 
 from control.email_config import (
     email_api_key,
@@ -27,6 +28,14 @@ class Contato:
         self.mensagem = mensagem
 
 
+def _build_logo_url():
+    return url_for(
+        'static',
+        filename='images/amiraldo_logo_transparent_white.png',
+        _external=True,
+    )
+
+
 def _build_plain_text(contato):
     return f"""
 Novo contato no DreamWalker Plane!
@@ -43,6 +52,7 @@ def _build_html_email(contato):
     nome = escape(contato.nome)
     email = escape(contato.email)
     mensagem = escape(contato.mensagem).replace('\n', '<br>')
+    logo_url = _build_logo_url()
 
     return f"""
 <!DOCTYPE html>
@@ -57,38 +67,41 @@ def _build_html_email(contato):
         <table role="presentation" width="100%" cellspacing="0" cellpadding="0" border="0" style="max-width: 680px; margin: 0 auto; border-collapse: collapse;">
             <tr>
                 <td style="padding: 0;">
-                    <div style="border:1px solid #2a2a2a; background: rgba(7,7,7,0.96); box-shadow: 0 22px 60px rgba(0,0,0,0.45);">
-                        <div style="padding: 26px 28px 18px; border-bottom: 1px solid #1d1d1d; text-align:center;">
-                            <div style="display:inline-block; padding: 7px 12px; border:1px solid #3a3a3a; color:#d1d1d1; font-size:11px; letter-spacing:0.28em; text-transform:uppercase;">
+                    <div style="border:2px solid #0603b4; background: rgba(7,7,7,0.96); box-shadow: 0 22px 60px rgba(0,0,0,0.45), 0 0 26px rgba(6,3,180,0.45), inset 0 0 0.35rem rgba(6,3,180,0.65);">
+                        <div style="padding: 26px 28px 18px; border-bottom: 1px solid rgba(6,3,180,0.45); text-align:center; box-shadow: inset 0 -10px 30px rgba(6,3,180,0.08);">
+                            <div style="display:inline-block; padding: 7px 12px; border:1px solid rgba(6,3,180,0.65); box-shadow: 0 0 12px rgba(6,3,180,0.28); color:#d9dcff; font-size:11px; letter-spacing:0.28em; text-transform:uppercase;">
                                 Novo contato recebido
                             </div>
-                            <h1 style="margin: 18px 0 0; color:#ffffff; font-family:'Orbitron', 'Arial Black', sans-serif; font-size:32px; font-weight:700; letter-spacing:0.12em; text-transform:uppercase;">
+                            <div style="margin: 0 0 14px; text-align:center;">
+                                <img src="{logo_url}" alt="DreamWalker Plane" style="width: 96px; max-width: 96px; height: auto; display: inline-block; filter: drop-shadow(0 0 10px rgba(6,3,180,0.28));">
+                            </div>
+                            <h1 style="margin: 18px 0 0; color:#ffffff; font-family:'Orbitron', 'Arial Black', sans-serif; font-size:32px; font-weight:700; letter-spacing:0.18em; text-transform:uppercase; text-shadow: 0 0 14px rgba(6,3,180,0.38);">
                                 DreamWalker Plane
                             </h1>
                         </div>
 
                         <div style="padding: 30px 28px 8px;">
-                            <div style="background: linear-gradient(180deg, rgba(255,255,255,0.05) 0%, rgba(255,255,255,0.02) 100%); border:1px solid #2c2c2c; padding: 22px; margin-bottom: 18px;">
-                                <div style="color:#8f8f8f; text-transform:uppercase; letter-spacing:0.22em; font-size:11px; margin-bottom:8px;">Remetente</div>
-                                <div style="font-size:24px; color:#ffffff; font-family:'Orbitron', 'Arial Black', sans-serif; margin-bottom:6px;">{nome}</div>
-                                <div style="font-size:14px; color:#d5d5d5;">{email}</div>
+                            <div style="background: linear-gradient(180deg, rgba(255,255,255,0.05) 0%, rgba(255,255,255,0.02) 100%); border:1px solid rgba(6,3,180,0.42); box-shadow: 0 0 18px rgba(6,3,180,0.14); padding: 22px; margin-bottom: 18px;">
+                                <div style="color:#8f8f8f; text-transform:uppercase; letter-spacing:0.28em; font-size:10px; margin-bottom:8px;">Remetente</div>
+                                <div style="font-size:24px; color:#ffffff; font-family:'Orbitron', 'Arial Black', sans-serif; letter-spacing:0.08em; margin-bottom:6px; text-shadow: 0 0 10px rgba(6,3,180,0.22);">{nome}</div>
+                                <div style="font-size:13px; color:#cfd6ff; letter-spacing:0.08em; text-transform:uppercase;">{email}</div>
                             </div>
 
                             <div style="margin-bottom: 24px;">
-                                <div style="color:#8f8f8f; text-transform:uppercase; letter-spacing:0.22em; font-size:11px; margin-bottom:10px;">Mensagem</div>
-                                <div style="background:#0d0d0d; border-left:4px solid #ffffff; border-top:1px solid #232323; border-right:1px solid #232323; border-bottom:1px solid #232323; padding: 20px 22px; color:#efefef; font-size:15px; line-height:1.8;">
+                                <div style="color:#8f8f8f; text-transform:uppercase; letter-spacing:0.28em; font-size:10px; margin-bottom:10px;">Mensagem</div>
+                                <div style="background:#0d0d0d; border-left:4px solid #0603b4; border-top:1px solid rgba(6,3,180,0.32); border-right:1px solid rgba(6,3,180,0.32); border-bottom:1px solid rgba(6,3,180,0.32); box-shadow: 0 0 16px rgba(6,3,180,0.12); padding: 20px 22px; color:#efefef; font-size:15px; line-height:1.9; letter-spacing:0.03em;">
                                     {mensagem}
                                 </div>
                             </div>
 
                             <div style="text-align:center; margin: 28px 0 10px;">
-                                <a href="mailto:{email}" style="display:inline-block; padding:14px 24px; background:#ffffff; color:#050505; text-decoration:none; font-family:'Orbitron', 'Arial Black', sans-serif; font-size:12px; font-weight:700; letter-spacing:0.18em; text-transform:uppercase; border:1px solid #ffffff;">
+                                <a href="mailto:{email}" style="display:inline-block; padding:14px 24px; background:#0603b4; color:#ffffff; text-decoration:none; font-family:'Orbitron', 'Arial Black', sans-serif; font-size:12px; font-weight:700; letter-spacing:0.18em; text-transform:uppercase; border:1px solid #0603b4; box-shadow: 0 0 22px rgba(6,3,180,0.45);">
                                     Responder contato
                                 </a>
                             </div>
                         </div>
 
-                        <div style="padding: 18px 28px 26px; text-align:center; border-top:1px solid #1d1d1d; color:#7d7d7d; font-size:11px; letter-spacing:0.1em; text-transform:uppercase;">
+                        <div style="padding: 18px 28px 26px; text-align:center; border-top:1px solid rgba(6,3,180,0.45); color:#8a90d6; font-size:11px; letter-spacing:0.24em; text-transform:uppercase; box-shadow: inset 0 12px 30px rgba(6,3,180,0.05);">
                             Enviado automaticamente pelo formulario de contato
                         </div>
                     </div>
