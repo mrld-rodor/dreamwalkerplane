@@ -108,3 +108,34 @@ class MensagemContato(db.Model):
     
     def __repr__(self):
         return f'<Mensagem de {self.nome} - {self.data_envio}>'
+
+
+class LogAuditoria(db.Model):
+    """Registro de acoes administrativas realizadas no portal."""
+    __tablename__ = 'logs_auditoria'
+
+    id = db.Column(db.Integer, primary_key=True)
+    acao = db.Column(db.String(100), nullable=False)
+    alvo_tipo = db.Column(db.String(50), nullable=False)
+    alvo_id = db.Column(db.Integer, nullable=True)
+    descricao = db.Column(db.Text, nullable=False)
+    admin_usuario = db.Column(db.String(100), nullable=False)
+    ip_admin = db.Column(db.String(45), nullable=True)
+    data_acao = db.Column(db.DateTime, default=datetime.utcnow, nullable=False)
+
+    def __repr__(self):
+        return f'<LogAuditoria {self.acao} por {self.admin_usuario}>'
+
+
+def registrar_log_auditoria(acao, alvo_tipo, descricao, admin_usuario, ip_admin=None, alvo_id=None):
+    """Adiciona um log administrativo na sessao atual do banco."""
+    log = LogAuditoria(
+        acao=acao,
+        alvo_tipo=alvo_tipo,
+        alvo_id=alvo_id,
+        descricao=descricao,
+        admin_usuario=admin_usuario or 'admin',
+        ip_admin=ip_admin,
+    )
+    db.session.add(log)
+    return log

@@ -9,7 +9,7 @@ from functools import wraps
 import os
 import random
 from datetime import datetime
-from models import Relato, Comentario, db
+from models import Relato, Comentario, LogAuditoria, db, registrar_log_auditoria
 from control.recaptcha import verify_recaptcha
 from control.limiter import limiter
 from control.email_function import EmailDeliveryError, EmailNetworkError
@@ -17,6 +17,14 @@ from control.sendgrid_email import send_comment_notification_email
 
 # Cria o Blueprint
 main_bp = Blueprint('main', __name__)
+
+
+def _admin_identity():
+    """Retorna usuario e IP atual do admin para auditoria."""
+    return (
+        session.get('admin_username') or current_app.config.get('ADMIN_USERNAME') or 'admin',
+        request.headers.get('X-Forwarded-For', request.remote_addr),
+    )
 
 
 @main_bp.route('/')
@@ -164,6 +172,16 @@ def admin_login():
         
         if username == admin_user and password == admin_pass:
             session['admin_logged'] = True
+            session['admin_username'] = username or admin_user or 'admin'
+            admin_usuario, ip_admin = _admin_identity()
+            registrar_log_auditoria(
+                acao='login',
+                alvo_tipo='sessao_admin',
+                descricao='Login administrativo realizado com sucesso.',
+                admin_usuario=admin_usuario,
+                ip_admin=ip_admin,
+            )
+            db.session.commit()
             flash('Login realizado com sucesso!', 'success')
             return redirect(url_for('main.status'))
         else:
@@ -176,7 +194,18 @@ def admin_login():
 @main_bp.route('/admin-logout')
 def admin_logout():
     """Logout administrativo"""
+    if session.get('admin_logged'):
+        admin_usuario, ip_admin = _admin_identity()
+        registrar_log_auditoria(
+            acao='logout',
+            alvo_tipo='sessao_admin',
+            descricao='Logout administrativo realizado.',
+            admin_usuario=admin_usuario,
+            ip_admin=ip_admin,
+        )
+        db.session.commit()
     session.pop('admin_logged', None)
+    session.pop('admin_username', None)
     flash('Logout realizado!', 'info')
     return redirect(url_for('main.index'))
 
@@ -211,6 +240,7 @@ def admin_dashboard():
     comentarios_pendentes = Comentario.query.filter_by(status='pendente').count()
     comentarios_rejeitados = Comentario.query.filter_by(status='rejeitado').count()
     ultimos_comentarios = Comentario.query.order_by(Comentario.data_envio.desc()).limit(10).all()
+    logs_auditoria = LogAuditoria.query.order_by(LogAuditoria.data_acao.desc()).limit(20).all()
 
     # Agrupamento de visitas por dia
     from collections import Counter
@@ -243,6 +273,7 @@ def admin_dashboard():
                           relatos_rejeitados=relatos_rejeitados,
                           ultimos_relatos=ultimos_relatos,
                           ultimos_comentarios=ultimos_comentarios,
+                          logs_auditoria=logs_auditoria,
                           total_comentarios=total_comentarios,
                           comentarios_aprovados=comentarios_aprovados,
                           comentarios_pendentes=comentarios_pendentes,
@@ -256,6 +287,15 @@ def admin_delete_relato(relato_id):
     """Exclui um relato diretamente pelo dashboard."""
     relato = Relato.query.get_or_404(relato_id)
     titulo = relato.titulo
+    admin_usuario, ip_admin = _admin_identity()
+    registrar_log_auditoria(
+        acao='excluir_relato',
+        alvo_tipo='relato',
+        alvo_id=relato.id,
+        descricao=f'Relato "{titulo}" excluido pelo admin.',
+        admin_usuario=admin_usuario,
+        ip_admin=ip_admin,
+    )
     db.session.delete(relato)
     db.session.commit()
     flash(f'Relato "{titulo}" apagado com sucesso.', 'success')
@@ -268,6 +308,15 @@ def admin_delete_comentario(comentario_id):
     """Exclui um comentário diretamente pelo dashboard."""
     comentario = Comentario.query.get_or_404(comentario_id)
     autor = comentario.autor
+    admin_usuario, ip_admin = _admin_identity()
+    registrar_log_auditoria(
+        acao='excluir_comentario',
+        alvo_tipo='comentario',
+        alvo_id=comentario.id,
+        descricao=f'Comentario de "{autor}" excluido pelo admin.',
+        admin_usuario=admin_usuario,
+        ip_admin=ip_admin,
+    )
     db.session.delete(comentario)
     db.session.commit()
     flash(f'Comentário de "{autor}" apagado com sucesso.', 'success')

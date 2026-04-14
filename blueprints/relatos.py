@@ -4,7 +4,7 @@ Usuário envia relato → status 'pendente' → admin valida → aparece no mura
 """
 
 from flask import Blueprint, render_template, request, redirect, url_for, flash, session, current_app
-from models import db, Relato, Comentario
+from models import db, Relato, Comentario, registrar_log_auditoria
 from datetime import datetime
 import bleach
 import requests
@@ -22,6 +22,14 @@ from control.sendgrid_email import (
 relatos_bp = Blueprint('relatos', __name__, url_prefix='/relatos')
 
 EMAIL_REGEX = re.compile(r'^[^@\s]+@[^@\s]+\.[^@\s]+$')
+
+
+def _admin_identity():
+    """Retorna usuario e IP atual do admin para auditoria."""
+    return (
+        session.get('admin_username') or current_app.config.get('ADMIN_USERNAME') or 'admin',
+        request.headers.get('X-Forwarded-For', request.remote_addr),
+    )
 
 
 @relatos_bp.route('/mural')
@@ -185,6 +193,16 @@ def admin_login():
         
         if senha == senha_correta:
             session['admin_logged'] = True
+            session['admin_username'] = current_app.config.get('ADMIN_USERNAME') or 'admin'
+            admin_usuario, ip_admin = _admin_identity()
+            registrar_log_auditoria(
+                acao='login',
+                alvo_tipo='sessao_admin',
+                descricao='Login administrativo realizado pela area de relatos.',
+                admin_usuario=admin_usuario,
+                ip_admin=ip_admin,
+            )
+            db.session.commit()
             flash('Login realizado com sucesso!', 'success')
             return redirect(url_for('relatos.admin_pendentes'))
         else:
@@ -204,6 +222,15 @@ def aprovar_relato(relato_id):
     relato = Relato.query.get_or_404(relato_id)
     
     if relato.status == 'pendente':
+        admin_usuario, ip_admin = _admin_identity()
+        registrar_log_auditoria(
+            acao='aprovar_relato',
+            alvo_tipo='relato',
+            alvo_id=relato.id,
+            descricao=f'Relato "{relato.titulo}" aprovado pelo admin.',
+            admin_usuario=admin_usuario,
+            ip_admin=ip_admin,
+        )
         relato.status = 'aprovado'
         relato.data_aprovacao = datetime.utcnow()
         db.session.commit()
@@ -233,6 +260,15 @@ def rejeitar_relato(relato_id):
     relato = Relato.query.get_or_404(relato_id)
     
     # Opção 1: Marcar como rejeitado e não mostrar
+    admin_usuario, ip_admin = _admin_identity()
+    registrar_log_auditoria(
+        acao='rejeitar_relato',
+        alvo_tipo='relato',
+        alvo_id=relato.id,
+        descricao=f'Relato "{relato.titulo}" rejeitado pelo admin.',
+        admin_usuario=admin_usuario,
+        ip_admin=ip_admin,
+    )
     relato.status = 'rejeitado'
     db.session.commit()
 
@@ -263,6 +299,15 @@ def aprovar_comentario(comentario_id):
     comentario = Comentario.query.get_or_404(comentario_id)
 
     if comentario.status == 'pendente':
+        admin_usuario, ip_admin = _admin_identity()
+        registrar_log_auditoria(
+            acao='aprovar_comentario',
+            alvo_tipo='comentario',
+            alvo_id=comentario.id,
+            descricao=f'Comentario de "{comentario.autor}" aprovado pelo admin.',
+            admin_usuario=admin_usuario,
+            ip_admin=ip_admin,
+        )
         comentario.status = 'aprovado'
         db.session.commit()
 
@@ -287,6 +332,15 @@ def rejeitar_comentario(comentario_id):
         return redirect(url_for('relatos.admin_login'))
 
     comentario = Comentario.query.get_or_404(comentario_id)
+    admin_usuario, ip_admin = _admin_identity()
+    registrar_log_auditoria(
+        acao='rejeitar_comentario',
+        alvo_tipo='comentario',
+        alvo_id=comentario.id,
+        descricao=f'Comentario de "{comentario.autor}" rejeitado pelo admin.',
+        admin_usuario=admin_usuario,
+        ip_admin=ip_admin,
+    )
     comentario.status = 'rejeitado'
     db.session.commit()
 
@@ -307,6 +361,17 @@ def rejeitar_comentario(comentario_id):
 @relatos_bp.route('/admin/logout')
 def admin_logout():
     """Logout do admin"""
+    if session.get('admin_logged'):
+        admin_usuario, ip_admin = _admin_identity()
+        registrar_log_auditoria(
+            acao='logout',
+            alvo_tipo='sessao_admin',
+            descricao='Logout administrativo realizado pela area de relatos.',
+            admin_usuario=admin_usuario,
+            ip_admin=ip_admin,
+        )
+        db.session.commit()
     session.pop('admin_logged', None)
+    session.pop('admin_username', None)
     flash('Logout realizado!', 'info')
     return redirect(url_for('relatos.mural'))

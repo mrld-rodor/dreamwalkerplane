@@ -1,6 +1,10 @@
 from collections import defaultdict
+from datetime import datetime
 
-from models import Relato, db
+from sqlalchemy import func
+from sqlalchemy.orm import joinedload, load_only
+
+from models import Comentario, Relato, db
 
 
 def _parse_int(value):
@@ -12,7 +16,9 @@ def _parse_int(value):
 
 def build_mural_context(args):
     """Monta o contexto completo usado pela página do mural."""
-    query = Relato.query.filter_by(status='aprovado')
+    query = Relato.query.options(
+        joinedload(Relato.comentarios).load_only(Comentario.id, Comentario.status)
+    ).filter_by(status='aprovado')
 
     busca = (args.get('q', '') or '').strip()
     if busca:
@@ -42,19 +48,30 @@ def build_mural_context(args):
         posts_por_ano[referencia.year][referencia.strftime('%B')].append(post)
 
     arquivo_map = {}
-    posts_aprovados = Relato.query.filter_by(status='aprovado')\
-        .filter(Relato.data_aprovacao.isnot(None))\
-        .order_by(Relato.data_aprovacao.desc())\
-        .all()
+    arquivo_rows = db.session.query(
+        func.extract('year', Relato.data_aprovacao).label('ano'),
+        func.extract('month', Relato.data_aprovacao).label('mes'),
+        func.count(Relato.id).label('total'),
+    ).filter(
+        Relato.status == 'aprovado',
+        Relato.data_aprovacao.isnot(None),
+    ).group_by(
+        'ano',
+        'mes',
+    ).order_by(
+        func.extract('year', Relato.data_aprovacao).desc(),
+        func.extract('month', Relato.data_aprovacao).desc(),
+    ).all()
 
-    for post in posts_aprovados:
-        referencia = post.data_aprovacao
-        ano_post = referencia.year
-        mes_num = referencia.month
+    for row in arquivo_rows:
+        ano_post = int(row.ano)
+        mes_num = int(row.mes)
+        total_mes = int(row.total)
+        referencia = datetime(ano_post, mes_num, 1)
         mes_info = {
             'numero': mes_num,
             'nome': referencia.strftime('%B'),
-            'total': 0,
+            'total': total_mes,
         }
 
         if ano_post not in arquivo_map:
@@ -67,8 +84,7 @@ def build_mural_context(args):
         if mes_num not in arquivo_map[ano_post]['meses']:
             arquivo_map[ano_post]['meses'][mes_num] = mes_info
 
-        arquivo_map[ano_post]['total'] += 1
-        arquivo_map[ano_post]['meses'][mes_num]['total'] += 1
+        arquivo_map[ano_post]['total'] += total_mes
 
     arquivo_anos = []
     for ano_post in sorted(arquivo_map.keys(), reverse=True):
