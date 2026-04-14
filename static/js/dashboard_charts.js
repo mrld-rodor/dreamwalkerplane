@@ -48,14 +48,92 @@ document.addEventListener('DOMContentLoaded', function() {
             type: 'line',
             data: {
                 labels: window.dashboardData.visitas_labels,
+                datasets: [
+                    {
+                        label: 'Visitantes',
+                        data: window.dashboardData.visitas_data,
+                        borderColor: '#3b82f6',
+                        backgroundColor: 'rgba(59,130,246,0.2)',
+                        fill: true,
+                        tension: 0.3
+                    },
+                    {
+                        label: 'Downloads',
+                        data: window.dashboardData.downloads_data,
+                        borderColor: '#a855f7',
+                        backgroundColor: 'rgba(168,85,247,0.12)',
+                        fill: false,
+                        tension: 0.25
+                    }
+                ]
+            },
+            options: {
+                responsive: true,
+                plugins: { legend: { display: true } },
+                scales: { y: { beginAtZero: true } }
+            }
+        });
+    }
+
+    // Gráfico de barras: acessos por hora
+    if (document.getElementById('acessosHoraChart')) {
+        new Chart(document.getElementById('acessosHoraChart').getContext('2d'), {
+            type: 'bar',
+            data: {
+                labels: window.dashboardData.horas_labels,
                 datasets: [{
-                    label: 'Visitantes',
-                    data: window.dashboardData.visitas_data,
-                    borderColor: '#3b82f6',
-                    backgroundColor: 'rgba(59,130,246,0.2)',
-                    fill: true,
-                    tension: 0.3
+                    label: 'Acessos por hora',
+                    data: window.dashboardData.horas_data,
+                    backgroundColor: 'rgba(251, 146, 60, 0.7)',
+                    borderColor: '#fb923c',
+                    borderWidth: 1,
+                    borderRadius: 6
                 }]
+            },
+            options: {
+                responsive: true,
+                plugins: { legend: { display: false } },
+                scales: {
+                    x: { ticks: { maxRotation: 0, autoSkip: true, maxTicksLimit: 12 } },
+                    y: { beginAtZero: true }
+                }
+            }
+        });
+    }
+
+    // Gráfico de tendência: visitas diarias + media movel
+    if (document.getElementById('tendenciaAcessosChart')) {
+        new Chart(document.getElementById('tendenciaAcessosChart').getContext('2d'), {
+            type: 'line',
+            data: {
+                labels: window.dashboardData.visitas_labels,
+                datasets: [
+                    {
+                        label: 'Visitas diarias',
+                        data: window.dashboardData.visitas_data,
+                        borderColor: '#38bdf8',
+                        backgroundColor: 'rgba(56, 189, 248, 0.18)',
+                        fill: true,
+                        tension: 0.25
+                    },
+                    {
+                        label: 'Downloads diarios',
+                        data: window.dashboardData.downloads_data,
+                        borderColor: '#c084fc',
+                        backgroundColor: 'rgba(192, 132, 252, 0)',
+                        fill: false,
+                        tension: 0.25
+                    },
+                    {
+                        label: 'Tendencia',
+                        data: window.dashboardData.visitas_tendencia,
+                        borderColor: '#f97316',
+                        backgroundColor: 'rgba(249, 115, 22, 0)',
+                        borderDash: [8, 4],
+                        fill: false,
+                        tension: 0.3
+                    }
+                ]
             },
             options: {
                 responsive: true,

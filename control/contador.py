@@ -144,15 +144,23 @@ def atualizar_contadores(visitas=0, downloads=0, ip=None):
             local = "Localhost"
             tipo_ip = "Privado"
         
-        # Registro da visita
-        registro_visita = {
-            'data': agora,
-            'ip': ip if ip else 'desconhecido',
-            'tipo': tipo_ip,
-            'local': local
-        }
-        
-        visitas_lista.append(registro_visita)
+        if visitas > 0 or downloads > 0:
+            if visitas > 0 and downloads > 0:
+                evento = 'visita_download'
+            elif downloads > 0:
+                evento = 'download'
+            else:
+                evento = 'visita'
+
+            registro_visita = {
+                'data': agora,
+                'ip': ip if ip else 'desconhecido',
+                'tipo': tipo_ip,
+                'local': local,
+                'evento': evento
+            }
+
+            visitas_lista.append(registro_visita)
         
         # Mantém apenas as últimas 500 visitas
         if len(visitas_lista) > 500:

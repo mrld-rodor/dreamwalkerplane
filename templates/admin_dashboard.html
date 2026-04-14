@@ -12,6 +12,11 @@
     'comentarios_rejeitados': comentarios_rejeitados|default(0, true),
     'visitas_labels': visitas_labels|default([], true),
     'visitas_data': visitas_data|default([], true),
+    'downloads_data': downloads_data|default([], true),
+    'visitas_tendencia': visitas_tendencia|default([], true),
+    'horas_labels': horas_labels|default([], true),
+    'horas_data': horas_data|default([], true),
+    'period_days': periodo_selecionado|default(30, true),
     'paises': paises|default([], true)
 }|tojson|safe }}</script>
 <script>
@@ -170,6 +175,14 @@ document.addEventListener('DOMContentLoaded', function() {
         <div class="flex justify-between items-center mb-8 flex-wrap gap-4">
             <h1 class="text-2xl md:text-3xl font-orbitron text-white"><i class="bi bi-speedometer2 mr-2"></i> <span data-lang="dashboard">Dashboard</span></h1>
             <div class="flex gap-3 flex-wrap">
+                <form method="get" action="{{ url_for('main.admin_dashboard') }}" class="flex items-center gap-2 border border-gray-800 px-3 py-2">
+                    <label for="periodo" class="text-gray-400 text-sm whitespace-nowrap">Janela</label>
+                    <select id="periodo" name="periodo" class="bg-gray-900 text-white text-sm px-2 py-1 border border-gray-700" onchange="this.form.submit()">
+                        <option value="7" {% if periodo_selecionado == 7 %}selected{% endif %}>7 dias</option>
+                        <option value="14" {% if periodo_selecionado == 14 %}selected{% endif %}>14 dias</option>
+                        <option value="30" {% if periodo_selecionado == 30 %}selected{% endif %}>30 dias</option>
+                    </select>
+                </form>
                 <a href="{{ url_for('relatos.admin_pendentes') }}" class="btn-comprar"><i class="bi bi-chat-dots mr-2"></i> <span data-lang="gerenciar_relatos">Relatos</span></a>
                 <a href="{{ url_for('main.status') }}" class="btn-comprar"><i class="bi bi-bar-chart mr-2"></i> <span data-lang="status">Status</span></a>
                 <a href="{{ url_for('main.admin_logout') }}" class="btn-comprar"><i class="bi bi-box-arrow-right mr-2"></i> <span data-lang="sair">Sair</span></a>
@@ -179,6 +192,7 @@ document.addEventListener('DOMContentLoaded', function() {
         <div class="grid grid-cols-1 md:grid-cols-8 gap-6 mb-8">
             <div class="border border-gray-800 p-6 text-center"><i class="bi bi-people text-3xl text-blue-400 mb-2"></i><p class="text-gray-400">Visitantes</p><p class="text-3xl font-orbitron text-blue-400">{{ visitantes }}</p></div>
             <div class="border border-gray-800 p-6 text-center"><i class="bi bi-download text-3xl text-purple-400 mb-2"></i><p class="text-gray-400">Downloads</p><p class="text-3xl font-orbitron text-purple-400">{{ downloads }}</p></div>
+            <div class="border border-gray-800 p-6 text-center"><i class="bi bi-clock text-3xl text-orange-300 mb-2"></i><p class="text-gray-400">Hora de pico</p><p class="text-2xl font-orbitron text-orange-300">{{ hora_pico or '--:--' }}</p><p class="text-sm text-gray-500">{{ hora_pico_total }} acessos</p></div>
             <div class="border border-gray-800 p-6 text-center"><i class="bi bi-chat-dots text-3xl text-white mb-2"></i><p class="text-gray-400">Total relatos</p><p class="text-3xl font-orbitron text-white">{{ total_relatos }}</p></div>
             <div class="border border-gray-800 p-6 text-center"><i class="bi bi-clock-history text-3xl text-yellow-400 mb-2"></i><p class="text-gray-400">Pend. relatos</p><p class="text-3xl font-orbitron text-yellow-400">{{ relatos_pendentes }}</p></div>
             <div class="border border-gray-800 p-6 text-center"><i class="bi bi-check-circle text-3xl text-green-400 mb-2"></i><p class="text-gray-400">Aprov. relatos</p><p class="text-3xl font-orbitron text-green-400">{{ relatos_aprovados }}</p></div>
@@ -206,7 +220,7 @@ document.addEventListener('DOMContentLoaded', function() {
         </div>
 
         <!-- GRÁFICOS PROFISSIONAIS -->
-        <div class="grid grid-cols-1 md:grid-cols-3 gap-8 mb-12">
+        <div class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-8 mb-12">
             <div class="bg-gray-900 rounded-lg p-6 shadow">
                 <h3 class="text-lg font-orbitron text-white mb-4">Relatos por Status</h3>
                 <canvas id="relatosStatusChart" height="180"></canvas>
@@ -217,7 +231,20 @@ document.addEventListener('DOMContentLoaded', function() {
             </div>
             <div class="bg-gray-900 rounded-lg p-6 shadow">
                 <h3 class="text-lg font-orbitron text-white mb-4">Visitantes por Dia</h3>
+                <p class="text-xs text-gray-500 mb-3">Janela atual: últimos {{ periodo_selecionado }} dias</p>
                 <canvas id="visitantesLineChart" height="180"></canvas>
+            </div>
+            <div class="bg-gray-900 rounded-lg p-6 shadow">
+                <h3 class="text-lg font-orbitron text-white mb-4">Acessos por Hora</h3>
+                <canvas id="acessosHoraChart" height="180"></canvas>
+            </div>
+        </div>
+
+        <div class="grid grid-cols-1 gap-8 mb-12">
+            <div class="bg-gray-900 rounded-lg p-6 shadow">
+                <h3 class="text-lg font-orbitron text-white mb-4">Tendência de Acessos</h3>
+                <p class="text-xs text-gray-500 mb-3">Comparativo diário entre visitas, downloads e média móvel</p>
+                <canvas id="tendenciaAcessosChart" height="120"></canvas>
             </div>
         </div>
 

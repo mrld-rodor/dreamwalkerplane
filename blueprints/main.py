@@ -14,6 +14,7 @@ from control.recaptcha import verify_recaptcha
 from control.limiter import limiter
 from control.email_function import EmailDeliveryError, EmailNetworkError
 from control.sendgrid_email import send_comment_notification_email
+from control.analytics import build_dashboard_analytics
 
 # Cria o Blueprint
 main_bp = Blueprint('main', __name__)
@@ -225,6 +226,7 @@ def admin_dashboard():
     """Dashboard administrativo com estatísticas"""
 
     visitantes, downloads, visitas = obter_contadores()
+    period_days = request.args.get('periodo', default=30, type=int)
 
     # Estatísticas de relatos
     from models import Relato, Comentario
@@ -242,31 +244,21 @@ def admin_dashboard():
     ultimos_comentarios = Comentario.query.order_by(Comentario.data_envio.desc()).limit(10).all()
     logs_auditoria = LogAuditoria.query.order_by(LogAuditoria.data_acao.desc()).limit(20).all()
 
-    # Agrupamento de visitas por dia
-    from collections import Counter
-    visitas_por_dia = Counter()
-    for v in visitas:
-        data = v.get('data')
-        if data:
-            dia = data.split(' ')[0]  # só a data, sem hora
-            visitas_por_dia[dia] += 1
-    visitas_labels = sorted(visitas_por_dia.keys())
-    visitas_data = [visitas_por_dia[d] for d in visitas_labels]
-
-    # Dados de localização dos visitantes (países)
-    paises = set()
-    for v in visitas:
-        pais = v.get('pais') or v.get('country')
-        if pais:
-            paises.add(pais)
-    paises = sorted(paises)
+    analytics = build_dashboard_analytics(visitas, period_days=period_days)
 
     return render_template('admin_dashboard.html', 
                           visitantes=visitantes, 
                           downloads=downloads, 
                           visitas=visitas,
-                          visitas_labels=visitas_labels,
-                          visitas_data=visitas_data,
+                          periodo_selecionado=analytics['period_days'],
+                          visitas_labels=analytics['visitas_labels'],
+                          visitas_data=analytics['visitas_data'],
+                          downloads_data=analytics['downloads_data'],
+                          visitas_tendencia=analytics['visitas_tendencia'],
+                          horas_labels=analytics['horas_labels'],
+                          horas_data=analytics['horas_data'],
+                          hora_pico=analytics['hora_pico'],
+                          hora_pico_total=analytics['hora_pico_total'],
                           total_relatos=total_relatos,
                           relatos_aprovados=relatos_aprovados,
                           relatos_pendentes=relatos_pendentes,
@@ -278,7 +270,7 @@ def admin_dashboard():
                           comentarios_aprovados=comentarios_aprovados,
                           comentarios_pendentes=comentarios_pendentes,
                           comentarios_rejeitados=comentarios_rejeitados,
-                          paises=paises)
+                          paises=analytics['paises'])
 
 
 @main_bp.route('/admin-dashboard/relatos/<int:relato_id>/delete', methods=['POST'])
