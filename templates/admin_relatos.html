@@ -32,10 +32,12 @@
                 <a href="{{ url_for('main.status') }}" class="btn-comprar">
                     <i class="bi bi-bar-chart mr-2"></i> Status
                 </a>
-                <a href="{{ url_for('relatos.admin_logout') }}" 
-                   class="btn-comprar">
-                    <i class="bi bi-box-arrow-right mr-2"></i> Sair
-                </a>
+                <form method="post" action="{{ url_for('relatos.admin_logout') }}" onsubmit="return confirm('Deseja realmente sair?');">
+                    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                    <button type="submit" class="btn-comprar">
+                        <i class="bi bi-box-arrow-right mr-2"></i> Sair
+                    </button>
+                </form>
             </div>
         </div>
         
@@ -92,15 +94,18 @@
                     
                     <!-- Botões de ação -->
                     <div class="flex gap-4">
-                        <a href="{{ url_for('relatos.aprovar_relato', relato_id=relato.id) }}" 
-                           class="flex-1 bg-green-600 hover:bg-green-700 text-white py-2 rounded-lg text-center transition text-sm font-orbitron">
-                            <i class="bi bi-check-lg mr-1"></i> Aprovar
-                        </a>
-                        <a href="{{ url_for('relatos.rejeitar_relato', relato_id=relato.id) }}" 
-                           class="flex-1 bg-red-600 hover:bg-red-700 text-white py-2 rounded-lg text-center transition text-sm font-orbitron"
-                           onclick="return confirm('Tem certeza que deseja rejeitar este relato?')">
-                            <i class="bi bi-x-lg mr-1"></i> Rejeitar
-                        </a>
+                        <form method="post" action="{{ url_for('relatos.aprovar_relato', relato_id=relato.id) }}" class="flex-1">
+                            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                            <button type="submit" class="w-full bg-green-600 hover:bg-green-700 text-white py-2 rounded-lg text-center transition text-sm font-orbitron">
+                                <i class="bi bi-check-lg mr-1"></i> Aprovar
+                            </button>
+                        </form>
+                        <form method="post" action="{{ url_for('relatos.rejeitar_relato', relato_id=relato.id) }}" class="flex-1" onsubmit="return confirm('Tem certeza que deseja rejeitar este relato?')">
+                            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                            <button type="submit" class="w-full bg-red-600 hover:bg-red-700 text-white py-2 rounded-lg text-center transition text-sm font-orbitron">
+                                <i class="bi bi-x-lg mr-1"></i> Rejeitar
+                            </button>
+                        </form>
                     </div>
                     
                 </div>
@@ -153,15 +158,18 @@
                     </div>
 
                     <div class="flex gap-4">
-                        <a href="{{ url_for('relatos.aprovar_comentario', comentario_id=comentario.id) }}"
-                           class="flex-1 bg-green-600 hover:bg-green-700 text-white py-2 rounded-lg text-center transition text-sm font-orbitron">
-                            <i class="bi bi-check-lg mr-1"></i> Aprovar
-                        </a>
-                        <a href="{{ url_for('relatos.rejeitar_comentario', comentario_id=comentario.id) }}"
-                           class="flex-1 bg-red-600 hover:bg-red-700 text-white py-2 rounded-lg text-center transition text-sm font-orbitron"
-                           onclick="return confirm('Tem certeza que deseja rejeitar este comentario?')">
-                            <i class="bi bi-x-lg mr-1"></i> Rejeitar
-                        </a>
+                        <form method="post" action="{{ url_for('relatos.aprovar_comentario', comentario_id=comentario.id) }}" class="flex-1">
+                            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                            <button type="submit" class="w-full bg-green-600 hover:bg-green-700 text-white py-2 rounded-lg text-center transition text-sm font-orbitron">
+                                <i class="bi bi-check-lg mr-1"></i> Aprovar
+                            </button>
+                        </form>
+                        <form method="post" action="{{ url_for('relatos.rejeitar_comentario', comentario_id=comentario.id) }}" class="flex-1" onsubmit="return confirm('Tem certeza que deseja rejeitar este comentario?')">
+                            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                            <button type="submit" class="w-full bg-red-600 hover:bg-red-700 text-white py-2 rounded-lg text-center transition text-sm font-orbitron">
+                                <i class="bi bi-x-lg mr-1"></i> Rejeitar
+                            </button>
+                        </form>
                     </div>
                 </div>
                 {% endfor %}

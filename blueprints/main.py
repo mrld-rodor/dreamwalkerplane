@@ -12,6 +12,7 @@ from datetime import datetime
 from models import Relato, Comentario, LogAuditoria, db, registrar_log_auditoria
 from control.recaptcha import verify_recaptcha
 from control.limiter import limiter
+from control.csrf import csrf_protect, validate_csrf_token
 from control.email_function import EmailDeliveryError, EmailNetworkError
 from control.sendgrid_email import send_comment_notification_email
 from control.analytics import build_dashboard_analytics
@@ -24,14 +25,14 @@ def _admin_identity():
     """Retorna usuario e IP atual do admin para auditoria."""
     return (
         session.get('admin_username') or current_app.config.get('ADMIN_USERNAME') or 'admin',
-        request.headers.get('X-Forwarded-For', request.remote_addr),
+        request.remote_addr,
     )
 
 
 @main_bp.route('/')
 def index():
     """Página inicial"""
-    ip = request.headers.get('X-Forwarded-For', request.remote_addr)
+    ip = request.remote_addr
     atualizar_contadores(visitas=1, ip=ip)
     return render_template('index.html')
 
@@ -120,7 +121,7 @@ def comprar_conto(conto_id):
         flash('Link de compra indisponivel no momento.', 'warning')
         return redirect(url_for('main.contos'))
 
-    ip = request.headers.get('X-Forwarded-For', request.remote_addr)
+    ip = request.remote_addr
     atualizar_contadores(downloads=1, ip=ip)
     return redirect(hotmart_link)
 
@@ -165,6 +166,11 @@ def admin_login():
         return redirect(url_for('main.status'))
     
     if request.method == 'POST':
+        submitted_csrf_token = request.form.get('csrf_token')
+        if not validate_csrf_token(submitted_csrf_token):
+            flash('Falha na validacao de seguranca do formulario. Tente novamente.', 'danger')
+            return render_template('admin_login.html'), 400
+
         username = request.form.get('username', '').strip()
         password = request.form.get('password', '').strip()
         
@@ -192,7 +198,9 @@ def admin_login():
 
 
 # Rota de logout
-@main_bp.route('/admin-logout')
+@main_bp.route('/admin-logout', methods=['POST'])
+@login_required
+@csrf_protect
 def admin_logout():
     """Logout administrativo"""
     if session.get('admin_logged'):
@@ -275,6 +283,7 @@ def admin_dashboard():
 
 @main_bp.route('/admin-dashboard/relatos/<int:relato_id>/delete', methods=['POST'])
 @login_required
+@csrf_protect
 def admin_delete_relato(relato_id):
     """Exclui um relato diretamente pelo dashboard."""
     relato = Relato.query.get_or_404(relato_id)
@@ -296,6 +305,7 @@ def admin_delete_relato(relato_id):
 
 @main_bp.route('/admin-dashboard/comentarios/<int:comentario_id>/delete', methods=['POST'])
 @login_required
+@csrf_protect
 def admin_delete_comentario(comentario_id):
     """Exclui um comentário diretamente pelo dashboard."""
     comentario = Comentario.query.get_or_404(comentario_id)
@@ -357,12 +367,17 @@ def ver_post(post_id):
 @main_bp.route('/post/<int:post_id>/comentar', methods=['POST'])
 @limiter.limit('5 per hour')
 def comentar(post_id):
+    submitted_csrf_token = request.form.get('csrf_token')
+    if not validate_csrf_token(submitted_csrf_token):
+        flash('Falha na validacao de seguranca do formulario. Tente novamente.', 'danger')
+        return redirect(url_for('main.ver_post', post_id=post_id))
+
     autor = request.form.get('autor', '').strip()
     email = request.form.get('email', '').strip()
     conteudo = request.form.get('conteudo', '').strip()
     captcha_answer = request.form.get('captcha_answer', '').strip()
     recaptcha_response = request.form.get('g-recaptcha-response', '').strip()
-    ip = request.headers.get('X-Forwarded-For', request.remote_addr)
+    ip = request.remote_addr
     
     if not autor or not conteudo:
         flash('Nome e comentário são obrigatórios!', 'danger')

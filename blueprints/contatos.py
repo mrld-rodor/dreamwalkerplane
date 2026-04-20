@@ -3,6 +3,7 @@ blueprints/contato.py - Sistema de Contato com envio de email
 """
 
 from flask import Blueprint, render_template, request, redirect, url_for, flash, current_app
+from control.csrf import validate_csrf_token
 from control.recaptcha import verify_recaptcha
 from control.limiter import limiter
 
@@ -32,10 +33,22 @@ def contato():
     """
     
     if request.method == 'POST':
+        submitted_csrf_token = request.form.get('csrf_token')
+
         # 1. Coleta dados
         nome = request.form.get('nome', '').strip()
         email = request.form.get('email', '').strip()
         mensagem = request.form.get('mensagem', '').strip()
+
+        if not validate_csrf_token(submitted_csrf_token):
+            flash('Falha na validacao de seguranca do formulario. Tente novamente.', 'danger')
+            return render_template(
+                'contato.html',
+                nome=nome,
+                email=email,
+                mensagem=mensagem,
+                contact_recaptcha_site_key=current_app.config.get('CONTACT_RECAPTCHA_SITE_KEY')
+            ), 400
         
         # 2. Validação básica
         erros = []

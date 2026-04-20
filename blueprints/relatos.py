@@ -12,6 +12,7 @@ import re
 from control.mural_context import build_mural_context
 from control.recaptcha import verify_recaptcha
 from control.limiter import limiter
+from control.csrf import csrf_protect, validate_csrf_token
 from control.email_function import EmailDeliveryError, EmailNetworkError
 from control.sendgrid_email import (
     send_notification_email,
@@ -28,7 +29,7 @@ def _admin_identity():
     """Retorna usuario e IP atual do admin para auditoria."""
     return (
         session.get('admin_username') or current_app.config.get('ADMIN_USERNAME') or 'admin',
-        request.headers.get('X-Forwarded-For', request.remote_addr),
+        request.remote_addr,
     )
 
 
@@ -48,11 +49,23 @@ def enviar_relato():
     """
     
     if request.method == 'POST':
+        submitted_csrf_token = request.form.get('csrf_token')
+
         # 1. Coleta os dados do formulário
         autor = request.form.get('autor', '').strip()
         email = request.form.get('email', '').strip()
         titulo = request.form.get('titulo', '').strip()
         conteudo = request.form.get('conteudo', '').strip()
+
+        if not validate_csrf_token(submitted_csrf_token):
+            flash('Falha na validacao de seguranca do formulario. Tente novamente.', 'danger')
+            return render_template('enviar_relato.html', 
+                                  autor=autor, 
+                                  email=email,
+                                  titulo=titulo, 
+                                  conteudo=conteudo,
+                                  config=current_app.config,
+                                  relato_recaptcha_site_key=current_app.config.get('RELATO_RECAPTCHA_SITE_KEY')), 400
         
         # 2. Validação básica
         erros = []
@@ -112,7 +125,7 @@ def enviar_relato():
                                   relato_recaptcha_site_key=current_app.config.get('RELATO_RECAPTCHA_SITE_KEY'))
         
         # 6. Salva no banco de dados
-        ip = request.headers.get('X-Forwarded-For', request.remote_addr)
+        ip = request.remote_addr
         
         novo_relato = Relato(
             autor=autor,
@@ -188,12 +201,17 @@ def admin_login():
     Login simples para administrador
     """
     if request.method == 'POST':
-        senha = request.form.get('senha', '')
+        submitted_csrf_token = request.form.get('csrf_token')
+        if not validate_csrf_token(submitted_csrf_token):
+            flash('Falha na validacao de seguranca do formulario. Tente novamente.', 'danger')
+            return render_template('admin_login.html'), 400
+
+        senha = request.form.get('password', request.form.get('senha', ''))
         senha_correta = current_app.config.get('ADMIN_PASSWORD', 'admin123')
         
         if senha == senha_correta:
             session['admin_logged'] = True
-            session['admin_username'] = current_app.config.get('ADMIN_USERNAME') or 'admin'
+            session['admin_username'] = request.form.get('username', '').strip() or current_app.config.get('ADMIN_USERNAME') or 'admin'
             admin_usuario, ip_admin = _admin_identity()
             registrar_log_auditoria(
                 acao='login',
@@ -211,7 +229,8 @@ def admin_login():
     return render_template('admin_login.html')
 
 
-@relatos_bp.route('/admin/aprovar/<int:relato_id>')
+@relatos_bp.route('/admin/aprovar/<int:relato_id>', methods=['POST'])
+@csrf_protect
 def aprovar_relato(relato_id):
     """
     Aprova um relato pendente
@@ -249,7 +268,8 @@ def aprovar_relato(relato_id):
     return redirect(url_for('relatos.admin_pendentes'))
 
 
-@relatos_bp.route('/admin/rejeitar/<int:relato_id>')
+@relatos_bp.route('/admin/rejeitar/<int:relato_id>', methods=['POST'])
+@csrf_protect
 def rejeitar_relato(relato_id):
     """
     Rejeita um relato pendente (pode ser excluído ou apenas marcado)
@@ -290,7 +310,8 @@ def rejeitar_relato(relato_id):
     return redirect(url_for('relatos.admin_pendentes'))
 
 
-@relatos_bp.route('/admin/comentarios/aprovar/<int:comentario_id>')
+@relatos_bp.route('/admin/comentarios/aprovar/<int:comentario_id>', methods=['POST'])
+@csrf_protect
 def aprovar_comentario(comentario_id):
     """Aprova um comentário pendente."""
     if not session.get('admin_logged'):
@@ -325,7 +346,8 @@ def aprovar_comentario(comentario_id):
     return redirect(url_for('relatos.admin_pendentes'))
 
 
-@relatos_bp.route('/admin/comentarios/rejeitar/<int:comentario_id>')
+@relatos_bp.route('/admin/comentarios/rejeitar/<int:comentario_id>', methods=['POST'])
+@csrf_protect
 def rejeitar_comentario(comentario_id):
     """Rejeita um comentário pendente."""
     if not session.get('admin_logged'):
@@ -358,7 +380,8 @@ def rejeitar_comentario(comentario_id):
     return redirect(url_for('relatos.admin_pendentes'))
 
 
-@relatos_bp.route('/admin/logout')
+@relatos_bp.route('/admin/logout', methods=['POST'])
+@csrf_protect
 def admin_logout():
     """Logout do admin"""
     if session.get('admin_logged'):

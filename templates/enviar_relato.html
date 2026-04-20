@@ -38,6 +38,7 @@
         <!-- Formulário -->
         <div class="dream-card p-6 md:p-8" data-anime="up">
             <form method="POST" action="{{ url_for('relatos.enviar_relato') }}" data-loading="true">
+                <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
                 
                 <!-- Campo: Autor -->
                 <div class="mb-6">

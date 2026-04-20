@@ -57,6 +57,7 @@
         
         <div class="dream-card p-6 md:p-8">
             <form method="POST" class="space-y-4">
+                <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
                 
                 <!-- Username -->
                 <div>

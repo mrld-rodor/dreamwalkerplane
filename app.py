@@ -14,7 +14,9 @@ load_dotenv()
 # Importa as extensões
 from models import db
 from control.contador import inicializar_contador, obter_contadores  
+from control.csrf import init_csrf
 from control.limiter import limiter
+from control.security import configure_proxy, configure_security
 
 # Importa os Blueprints
 from blueprints.main import main_bp
@@ -27,12 +29,15 @@ def create_app():
     """Factory da aplicação Flask"""
     
     app = Flask(__name__)
+    configure_proxy(app)
+    init_csrf(app)
 
     # ========== CONFIGURAÇÕES ==========
     # Segurança
     app.config['SECRET_KEY'] = os.getenv('SECRET_KEY')
     if not app.config['SECRET_KEY']:
         raise ValueError("SECRET_KEY não configurada! Defina no .env")
+    configure_security(app)
     
     # Banco de dados (postgresql com SSL)
     database_url = os.getenv('DATABASE_URL')
@@ -147,4 +152,5 @@ app = create_app()
 if __name__ == '__main__':
     # Em desenvolvimento: PORT vem do .env ou padrão 5000
     port = int(os.getenv('PORT', 5000))
-    app.run(host='0.0.0.0', port=port, debug=True)
+    debug_enabled = os.getenv('FLASK_DEBUG', 'false').strip().lower() in {'1', 'true', 'yes', 'on'}
+    app.run(host='0.0.0.0', port=port, debug=debug_enabled)

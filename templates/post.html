@@ -101,6 +101,7 @@
                 <h4 class="text-xl font-orbitron text-white mb-4">Deixe seu comentário</h4>
                 
                 <form method="POST" action="{{ url_for('main.comentar', post_id=post.id) }}" class="comment-form">
+                    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
                     <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
                         <input type="text" name="autor" placeholder="Seu nome" required
                                class="bg-gray-800 border border-gray-700 rounded-lg px-4 py-2 text-white focus:outline-none focus:border-dream-purple">
