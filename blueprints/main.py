@@ -5,11 +5,16 @@ Início, Contos, Sonhar, Políticas e Termos
 
 from flask import Blueprint, render_template, request, current_app, session, redirect, url_for, flash
 from control.contador import atualizar_contadores, obter_contadores
-from functools import wraps
-import os
 import random
-from datetime import datetime
 from models import Relato, Comentario, LogAuditoria, db, registrar_log_auditoria
+from control.admin_auth import (
+    admin_login_required,
+    clear_admin_session,
+    establish_admin_session,
+    get_admin_identity,
+    is_admin_logged_in,
+    verify_admin_credentials,
+)
 from control.recaptcha import verify_recaptcha
 from control.limiter import limiter
 from control.csrf import csrf_protect, validate_csrf_token
@@ -19,14 +24,6 @@ from control.analytics import build_dashboard_analytics
 
 # Cria o Blueprint
 main_bp = Blueprint('main', __name__)
-
-
-def _admin_identity():
-    """Retorna usuario e IP atual do admin para auditoria."""
-    return (
-        session.get('admin_username') or current_app.config.get('ADMIN_USERNAME') or 'admin',
-        request.remote_addr,
-    )
 
 
 @main_bp.route('/')
@@ -144,25 +141,16 @@ def politica():
     return render_template('p_privacy.html')
 
 
-# ==================== PROTEÇÃO DE ROTAS ADMIN ====================
-
-def login_required(f):
-    """Decorator para proteger rotas admin"""
-    @wraps(f)
-    def decorated_function(*args, **kwargs):
-        if not session.get('admin_logged'):
-            flash('Acesso negado! Faça login primeiro.', 'danger')
-            return redirect(url_for('main.admin_login'))
-        return f(*args, **kwargs)
-    return decorated_function
-
-
 # Rota de login do admin
 @main_bp.route('/admin-login', methods=['GET', 'POST'])
+@limiter.limit('5 per 15 minutes', methods=['POST'])
 def admin_login():
     """Login administrativo"""
     # Se já estiver logado, redireciona para status
-    if session.get('admin_logged'):
+    if is_admin_logged_in():
+        next_url = request.args.get('next')
+        if next_url:
+            return redirect(next_url)
         return redirect(url_for('main.status'))
     
     if request.method == 'POST':
@@ -173,14 +161,12 @@ def admin_login():
 
         username = request.form.get('username', '').strip()
         password = request.form.get('password', '').strip()
-        
+
         admin_user = current_app.config.get('ADMIN_USERNAME')
-        admin_pass = current_app.config.get('ADMIN_PASSWORD')
-        
-        if username == admin_user and password == admin_pass:
-            session['admin_logged'] = True
-            session['admin_username'] = username or admin_user or 'admin'
-            admin_usuario, ip_admin = _admin_identity()
+
+        if verify_admin_credentials(username, password):
+            establish_admin_session(username=username or admin_user)
+            admin_usuario, ip_admin = get_admin_identity()
             registrar_log_auditoria(
                 acao='login',
                 alvo_tipo='sessao_admin',
@@ -190,21 +176,22 @@ def admin_login():
             )
             db.session.commit()
             flash('Login realizado com sucesso!', 'success')
-            return redirect(url_for('main.status'))
+            next_url = request.args.get('next') or request.form.get('next')
+            return redirect(next_url or url_for('main.status'))
         else:
             flash('Usuário ou senha inválidos!', 'danger')
     
-    return render_template('admin_login.html')
+    return render_template('admin_login.html', next_url=request.args.get('next', ''))
 
 
 # Rota de logout
 @main_bp.route('/admin-logout', methods=['POST'])
-@login_required
+@admin_login_required
 @csrf_protect
 def admin_logout():
     """Logout administrativo"""
-    if session.get('admin_logged'):
-        admin_usuario, ip_admin = _admin_identity()
+    if is_admin_logged_in():
+        admin_usuario, ip_admin = get_admin_identity()
         registrar_log_auditoria(
             acao='logout',
             alvo_tipo='sessao_admin',
@@ -213,15 +200,14 @@ def admin_logout():
             ip_admin=ip_admin,
         )
         db.session.commit()
-    session.pop('admin_logged', None)
-    session.pop('admin_username', None)
+    clear_admin_session()
     flash('Logout realizado!', 'info')
     return redirect(url_for('main.index'))
 
 
 # Rota do status (protegida)
 @main_bp.route('/status')
-@login_required
+@admin_login_required
 def status():
     """Página de status com estatísticas"""
     visitantes, downloads, visitas = obter_contadores()
@@ -229,7 +215,7 @@ def status():
 
 
 @main_bp.route('/admin-dashboard')
-@login_required
+@admin_login_required
 def admin_dashboard():
     """Dashboard administrativo com estatísticas"""
 
@@ -282,13 +268,13 @@ def admin_dashboard():
 
 
 @main_bp.route('/admin-dashboard/relatos/<int:relato_id>/delete', methods=['POST'])
-@login_required
+@admin_login_required
 @csrf_protect
 def admin_delete_relato(relato_id):
     """Exclui um relato diretamente pelo dashboard."""
     relato = Relato.query.get_or_404(relato_id)
     titulo = relato.titulo
-    admin_usuario, ip_admin = _admin_identity()
+    admin_usuario, ip_admin = get_admin_identity()
     registrar_log_auditoria(
         acao='excluir_relato',
         alvo_tipo='relato',
@@ -304,13 +290,13 @@ def admin_delete_relato(relato_id):
 
 
 @main_bp.route('/admin-dashboard/comentarios/<int:comentario_id>/delete', methods=['POST'])
-@login_required
+@admin_login_required
 @csrf_protect
 def admin_delete_comentario(comentario_id):
     """Exclui um comentário diretamente pelo dashboard."""
     comentario = Comentario.query.get_or_404(comentario_id)
     autor = comentario.autor
-    admin_usuario, ip_admin = _admin_identity()
+    admin_usuario, ip_admin = get_admin_identity()
     registrar_log_auditoria(
         acao='excluir_comentario',
         alvo_tipo='comentario',

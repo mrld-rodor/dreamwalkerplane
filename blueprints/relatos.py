@@ -3,12 +3,12 @@ blueprints/relatos.py - Sistema de Relatos dos Usuários
 Usuário envia relato → status 'pendente' → admin valida → aparece no mural
 """
 
-from flask import Blueprint, render_template, request, redirect, url_for, flash, session, current_app
+from flask import Blueprint, render_template, request, redirect, url_for, flash, current_app
 from models import db, Relato, Comentario, registrar_log_auditoria
 from datetime import datetime
-import bleach
-import requests
 import re
+import bleach
+from control.admin_auth import admin_login_required, get_admin_identity
 from control.mural_context import build_mural_context
 from control.recaptcha import verify_recaptcha
 from control.limiter import limiter
@@ -23,14 +23,6 @@ from control.sendgrid_email import (
 relatos_bp = Blueprint('relatos', __name__, url_prefix='/relatos')
 
 EMAIL_REGEX = re.compile(r'^[^@\s]+@[^@\s]+\.[^@\s]+$')
-
-
-def _admin_identity():
-    """Retorna usuario e IP atual do admin para auditoria."""
-    return (
-        session.get('admin_username') or current_app.config.get('ADMIN_USERNAME') or 'admin',
-        request.remote_addr,
-    )
 
 
 @relatos_bp.route('/mural')
@@ -172,14 +164,12 @@ def enviar_relato():
 # ============================================================
 
 @relatos_bp.route('/admin/pendentes')
+@admin_login_required
 def admin_pendentes():
     """
     Lista relatos pendentes de aprovação
     Protegido por senha (via session)
     """
-    if not session.get('admin_logged'):
-        return redirect(url_for('relatos.admin_login'))
-    
     relatos_pendentes = Relato.query.filter_by(status='pendente')\
         .order_by(Relato.data_envio.desc())\
         .all()
@@ -197,51 +187,22 @@ def admin_pendentes():
 
 @relatos_bp.route('/admin/login', methods=['GET', 'POST'])
 def admin_login():
-    """
-    Login simples para administrador
-    """
-    if request.method == 'POST':
-        submitted_csrf_token = request.form.get('csrf_token')
-        if not validate_csrf_token(submitted_csrf_token):
-            flash('Falha na validacao de seguranca do formulario. Tente novamente.', 'danger')
-            return render_template('admin_login.html'), 400
-
-        senha = request.form.get('password', request.form.get('senha', ''))
-        senha_correta = current_app.config.get('ADMIN_PASSWORD', 'admin123')
-        
-        if senha == senha_correta:
-            session['admin_logged'] = True
-            session['admin_username'] = request.form.get('username', '').strip() or current_app.config.get('ADMIN_USERNAME') or 'admin'
-            admin_usuario, ip_admin = _admin_identity()
-            registrar_log_auditoria(
-                acao='login',
-                alvo_tipo='sessao_admin',
-                descricao='Login administrativo realizado pela area de relatos.',
-                admin_usuario=admin_usuario,
-                ip_admin=ip_admin,
-            )
-            db.session.commit()
-            flash('Login realizado com sucesso!', 'success')
-            return redirect(url_for('relatos.admin_pendentes'))
-        else:
-            flash('Senha incorreta!', 'danger')
-    
-    return render_template('admin_login.html')
+    """Mantem compatibilidade redirecionando o login legado para a rota central."""
+    next_url = url_for('relatos.admin_pendentes')
+    return redirect(url_for('main.admin_login', next=next_url), code=302)
 
 
 @relatos_bp.route('/admin/aprovar/<int:relato_id>', methods=['POST'])
+@admin_login_required
 @csrf_protect
 def aprovar_relato(relato_id):
     """
     Aprova um relato pendente
     """
-    if not session.get('admin_logged'):
-        return redirect(url_for('relatos.admin_login'))
-    
     relato = Relato.query.get_or_404(relato_id)
     
     if relato.status == 'pendente':
-        admin_usuario, ip_admin = _admin_identity()
+        admin_usuario, ip_admin = get_admin_identity()
         registrar_log_auditoria(
             acao='aprovar_relato',
             alvo_tipo='relato',
@@ -269,18 +230,16 @@ def aprovar_relato(relato_id):
 
 
 @relatos_bp.route('/admin/rejeitar/<int:relato_id>', methods=['POST'])
+@admin_login_required
 @csrf_protect
 def rejeitar_relato(relato_id):
     """
     Rejeita um relato pendente (pode ser excluído ou apenas marcado)
     """
-    if not session.get('admin_logged'):
-        return redirect(url_for('relatos.admin_login'))
-    
     relato = Relato.query.get_or_404(relato_id)
     
     # Opção 1: Marcar como rejeitado e não mostrar
-    admin_usuario, ip_admin = _admin_identity()
+    admin_usuario, ip_admin = get_admin_identity()
     registrar_log_auditoria(
         acao='rejeitar_relato',
         alvo_tipo='relato',
@@ -311,16 +270,14 @@ def rejeitar_relato(relato_id):
 
 
 @relatos_bp.route('/admin/comentarios/aprovar/<int:comentario_id>', methods=['POST'])
+@admin_login_required
 @csrf_protect
 def aprovar_comentario(comentario_id):
     """Aprova um comentário pendente."""
-    if not session.get('admin_logged'):
-        return redirect(url_for('relatos.admin_login'))
-
     comentario = Comentario.query.get_or_404(comentario_id)
 
     if comentario.status == 'pendente':
-        admin_usuario, ip_admin = _admin_identity()
+        admin_usuario, ip_admin = get_admin_identity()
         registrar_log_auditoria(
             acao='aprovar_comentario',
             alvo_tipo='comentario',
@@ -347,14 +304,12 @@ def aprovar_comentario(comentario_id):
 
 
 @relatos_bp.route('/admin/comentarios/rejeitar/<int:comentario_id>', methods=['POST'])
+@admin_login_required
 @csrf_protect
 def rejeitar_comentario(comentario_id):
     """Rejeita um comentário pendente."""
-    if not session.get('admin_logged'):
-        return redirect(url_for('relatos.admin_login'))
-
     comentario = Comentario.query.get_or_404(comentario_id)
-    admin_usuario, ip_admin = _admin_identity()
+    admin_usuario, ip_admin = get_admin_identity()
     registrar_log_auditoria(
         acao='rejeitar_comentario',
         alvo_tipo='comentario',
@@ -381,20 +336,6 @@ def rejeitar_comentario(comentario_id):
 
 
 @relatos_bp.route('/admin/logout', methods=['POST'])
-@csrf_protect
 def admin_logout():
-    """Logout do admin"""
-    if session.get('admin_logged'):
-        admin_usuario, ip_admin = _admin_identity()
-        registrar_log_auditoria(
-            acao='logout',
-            alvo_tipo='sessao_admin',
-            descricao='Logout administrativo realizado pela area de relatos.',
-            admin_usuario=admin_usuario,
-            ip_admin=ip_admin,
-        )
-        db.session.commit()
-    session.pop('admin_logged', None)
-    session.pop('admin_username', None)
-    flash('Logout realizado!', 'info')
-    return redirect(url_for('relatos.mural'))
+    """Mantem compatibilidade redirecionando o logout legado para a rota central."""
+    return redirect(url_for('main.admin_logout'), code=307)

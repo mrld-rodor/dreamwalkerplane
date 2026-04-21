@@ -32,7 +32,7 @@
                 <a href="{{ url_for('main.status') }}" class="btn-comprar">
                     <i class="bi bi-bar-chart mr-2"></i> Status
                 </a>
-                <form method="post" action="{{ url_for('relatos.admin_logout') }}" onsubmit="return confirm('Deseja realmente sair?');">
+                <form method="post" action="{{ url_for('main.admin_logout') }}" onsubmit="return confirm('Deseja realmente sair?');">
                     <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
                     <button type="submit" class="btn-comprar">
                         <i class="bi bi-box-arrow-right mr-2"></i> Sair

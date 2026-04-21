@@ -19,3 +19,20 @@
 <h2>Proteção CSRF</h2>
 
 <p>Os formulários <code>POST</code> administrativos e públicos agora enviam um token CSRF baseado em sessão. Se o token estiver ausente ou inválido, a aplicação rejeita a submissão para evitar disparos cruzados de ações administrativas e envios indevidos de formulário.</p>
+
+<h2>Autenticação Admin</h2>
+
+<p>O login administrativo agora aplica limite específico de tentativas e aceita preferencialmente senha com hash via <code>ADMIN_PASSWORD_HASH</code>. A variável <code>ADMIN_PASSWORD</code> continua funcionando apenas como fallback de compatibilidade.</p>
+
+<p>Para gerar um hash compatível, use:</p>
+
+<pre><code>/home/rodorxes/mrld/Projects/dreamwalkerplane_V2/.venv/bin/python -c "from werkzeug.security import generate_password_hash; print(generate_password_hash('SUA_SENHA'))"</code></pre>
+
+<p>Depois configure:</p>
+
+<ul>
+	<li><code>ADMIN_USERNAME=seu_usuario</code></li>
+	<li><code>ADMIN_PASSWORD_HASH=hash_gerado</code></li>
+</ul>
+
+<p>O valor em <code>ADMIN_PASSWORD</code> deve ser removido do ambiente assim que a migração para hash estiver concluída.</p>

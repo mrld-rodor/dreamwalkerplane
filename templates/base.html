@@ -84,8 +84,8 @@
                         <a href="{{ url_for('main.sonhar') }}" class="nav-link-desktop">O Sonhar</a>
                         
                         <!-- Link Admin (aparece apenas se logado) -->
-                        {% if session.admin_token %}
-                        <a href="{{ url_for('admin.dashboard') }}" class="nav-link-desktop border-l border-gray-800 ml-2 pl-4">
+                        {% if session.admin_logged %}
+                        <a href="{{ url_for('main.admin_dashboard') }}" class="nav-link-desktop border-l border-gray-800 ml-2 pl-4">
                             <i class="bi bi-shield-lock mr-1"></i> Admin
                         </a>
                         {% endif %}
@@ -140,8 +140,8 @@
                 <a href="{{ url_for('contato.contato') }}" class="btn-option-nav-mobile">Contato</a>
                 <a href="{{ url_for('main.sonhar') }}" class="btn-option-nav-mobile">O Sonhar</a>
                 
-                {% if session.admin_token %}
-                <a href="{{ url_for('admin.dashboard') }}" class="btn-option-nav-mobile border-gray-600 mt-2">
+                {% if session.admin_logged %}
+                <a href="{{ url_for('main.admin_dashboard') }}" class="btn-option-nav-mobile border-gray-600 mt-2">
                     <i class="bi bi-shield-lock mr-2"></i> Admin
                 </a>
                 {% endif %}

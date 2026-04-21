@@ -62,7 +62,7 @@ def _send_email_payload(recipient, subject, html_body, text_body):
 def _build_admin_links():
     base_url = request.url_root.rstrip('/')
     return {
-        'login': url_for('relatos.admin_login', _external=True),
+        'login': url_for('main.admin_login', _external=True),
         'pendentes': url_for('relatos.admin_pendentes', _external=True),
         'dashboard': url_for('main.admin_dashboard', _external=True),
         'logo': url_for('static', filename='images/amiraldo_logo_transparent_white.png', _external=True),

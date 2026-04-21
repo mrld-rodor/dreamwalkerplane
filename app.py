@@ -100,6 +100,7 @@ def create_app():
     
     # Admin
     app.config['ADMIN_PASSWORD'] = os.getenv('ADMIN_PASSWORD')
+    app.config['ADMIN_PASSWORD_HASH'] = os.getenv('ADMIN_PASSWORD_HASH')
     app.config['ADMIN_USERNAME'] = os.getenv('ADMIN_USERNAME')
 
 
